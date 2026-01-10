@@ -1,0 +1,11 @@
+{
+    "tool-call": [
+        {
+            "name": "block-git-push",
+            "command": "bash -c 'if echo \"$CLAUDE_TOOL_PARAMETERS\" | jq -r \".command // \\\"\\\"\" | grep -qE \"git push\"; then echo \"❌ Git push operations are blocked in this project. Please push manually.\"; exit 1; fi'",
+            "when": {
+                "tool": "Bash"
+            }
+        }
+    ]
+}
