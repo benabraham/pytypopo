@@ -54,8 +54,8 @@ LOCALE_CONFIGS = {
         "dash_char": EM_DASH,
         "dash_space_after": "",
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
-        # Using nbsp for consistency across locales (matches test expectations)
-        "space_after_abbreviation": NBSP,
+        # en-us uses no space (empty string) - matches upstream typopo
+        "space_after_abbreviation": "",
     },
     "de-de": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
@@ -101,10 +101,10 @@ LOCALE_CONFIGS = {
         "ordinal_date_first_space": NBSP,
         "ordinal_date_second_space": NBSP,
         "space_before_percent": NBSP,  # sk: nbsp before %
-        # sk uses en dash with nbsp before and space after (same as cs)
-        "dash_space_before": NBSP,
-        "dash_char": EN_DASH,
-        "dash_space_after": SPACE,
+        # sk uses em dash with hair spaces (matches upstream typopo)
+        "dash_space_before": HAIR_SPACE,
+        "dash_char": EM_DASH,
+        "dash_space_after": HAIR_SPACE,
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
     },

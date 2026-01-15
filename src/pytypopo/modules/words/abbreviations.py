@@ -123,15 +123,15 @@ def fix_initials(text, locale):
             "pattern": rf"{initial_pattern}{full_name_pattern}",
             "replacement": rf"\1{NBSP}\3",
         },
-        # Pattern 2: "I. I. FullName"
+        # Pattern 2: "I. I. FullName" - regular space before name (matches JS)
         {
             "pattern": rf"{initial_pattern}{initial_pattern}{full_name_pattern}",
-            "replacement": rf"\1{abbr_space}\3{NBSP}\5",
+            "replacement": rf"\1{abbr_space}\3 \5",
         },
-        # Pattern 3: "I. I. I. FullName"
+        # Pattern 3: "I. I. I. FullName" - regular space before name (matches JS)
         {
             "pattern": rf"{initial_pattern}{initial_pattern}{initial_pattern}{full_name_pattern}",
-            "replacement": rf"\1{abbr_space}\3{abbr_space}\5{NBSP}\7",
+            "replacement": rf"\1{abbr_space}\3{abbr_space}\5 \7",
         },
     ]
 
@@ -208,9 +208,10 @@ def fix_multiple_word_abbreviations(text, locale):
                 for i in range(count - 1):
                     word_group = 2 + i * 3  # 2, 5, 8, ...
                     result += match.group(word_group) + "." + space
-                # Last abbreviation word - followed by period and nbsp before next word
+                # Last abbreviation word - followed by period and regular space before next word
+                # (matches JS - regular space, not nbsp)
                 last_word_group = 2 + (count - 1) * 3
-                result += match.group(last_word_group) + "." + NBSP
+                result += match.group(last_word_group) + ". "
                 # Following word
                 following_group = 2 + count * 3
                 result += match.group(following_group)
