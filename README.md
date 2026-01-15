@@ -123,3 +123,7 @@ Where:
 ## Differences from original
 
 This port aims to match the original typopo behavior exactly. Minor differences may exist in edge cases. If you find any discrepancies, please [open an issue](https://github.com/benabraham/pytypopo/issues).
+
+## Cross-Testing
+
+This project includes a cross-test suite that runs the original JavaScript tests against the Python port to verify parity. See [cross-test/README.md](cross-test/README.md) for details.
