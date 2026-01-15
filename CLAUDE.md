@@ -106,6 +106,26 @@ Pipeline order matters (prevents re-matching corrected patterns):
 - 4-space indent, 120-char max line
 - Use guard clauses, pure functions where practical
 
+## Cross-Testing (brotest)
+
+Run Python against the upstream JS test suite to verify parity:
+
+```bash
+# Run full cross-test suite
+./cross-test/run-cross-tests.sh
+
+# Show only failures
+./cross-test/show-failures.sh
+
+# Test specific module
+./cross-test/show-failures.sh dash
+```
+
+Use the **brotest** agent to fix parity failures:
+- Compares JS vs Python locale configs
+- Identifies mismatches in dash types, quote chars, spacing
+- Reference: `cross-test/typopo/src/` (JS) vs `src/pytypopo/` (Python)
+
 ## Versioning
 
 This project tracks the upstream library's version using semantic versioning and appends a Python-specific local build suffix.

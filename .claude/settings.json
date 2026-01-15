@@ -1,5 +1,12 @@
 {
   "enabledPlugins": {
     "sentry@claude-plugins-official": true
+  },
+  "agents": {
+    "brotest": {
+      "description": "Fix cross-test parity failures between pytypopo (Python) and typopo (JavaScript). Use when investigating test failures in cross-test/ or fixing locale/module differences.",
+      "instructionsFile": ".claude/agents/brotest.md",
+      "tools": ["Bash", "Read", "Edit", "Write", "Grep", "Glob"]
+    }
   }
 }
