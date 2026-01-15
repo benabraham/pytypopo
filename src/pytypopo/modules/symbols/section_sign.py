@@ -66,15 +66,13 @@ def fix_section_sign(text, locale):
 
     Args:
         text: Input text to fix
-        locale: Language locale (determines spacing after symbol)
+        locale: Locale instance (determines spacing after symbol)
 
     Returns:
         Text with section and paragraph sign spacing fixed
     """
-    # For all locales, use narrow nbsp after section/paragraph signs
-    space_after = NARROW_NBSP
-
-    text = fix_spacing_around_symbol(text, SECTION_SIGN, space_after)
-    text = fix_spacing_around_symbol(text, PARAGRAPH_SIGN, space_after)
+    # Use locale-specific spacing
+    text = fix_spacing_around_symbol(text, SECTION_SIGN, locale.space_after_section_sign)
+    text = fix_spacing_around_symbol(text, PARAGRAPH_SIGN, locale.space_after_paragraph_sign)
 
     return text
