@@ -57,6 +57,8 @@ LOCALE_CONFIGS = {
         # en-us uses no space (empty string) - matches upstream typopo
         "space_after_abbreviation": "",
         # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
         "space_after_numero_sign": NBSP,
         "space_after_section_sign": NBSP,
         "space_after_paragraph_sign": NBSP,
@@ -78,6 +80,8 @@ LOCALE_CONFIGS = {
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
         # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
         "space_after_numero_sign": NBSP,
         "space_after_section_sign": NBSP,
         "space_after_paragraph_sign": NBSP,
@@ -99,6 +103,8 @@ LOCALE_CONFIGS = {
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
         # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
         "space_after_numero_sign": NBSP,
         "space_after_section_sign": NBSP,
         "space_after_paragraph_sign": NBSP,
@@ -120,6 +126,8 @@ LOCALE_CONFIGS = {
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
         # Symbol spacing - sk uses narrow nbsp for section/paragraph
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
         "space_after_numero_sign": NBSP,
         "space_after_section_sign": NARROW_NBSP,
         "space_after_paragraph_sign": NARROW_NBSP,
@@ -141,6 +149,8 @@ LOCALE_CONFIGS = {
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
         # Symbol spacing - rue uses narrow nbsp for section/paragraph
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
         "space_after_numero_sign": NBSP,
         "space_after_section_sign": NARROW_NBSP,
         "space_after_paragraph_sign": NARROW_NBSP,
@@ -181,6 +191,8 @@ class Locale:
         self._dash_char = config["dash_char"]
         self._dash_space_after = config["dash_space_after"]
         self._space_after_abbreviation = config["space_after_abbreviation"]
+        self._space_after_copyright = config["space_after_copyright"]
+        self._space_after_sound_recording_copyright = config["space_after_sound_recording_copyright"]
         self._space_after_numero_sign = config["space_after_numero_sign"]
         self._space_after_section_sign = config["space_after_section_sign"]
         self._space_after_paragraph_sign = config["space_after_paragraph_sign"]
@@ -273,6 +285,16 @@ class Locale:
     def space_after_abbreviation(self):
         """Space character between abbreviated words (e.g., F.{space}X. Salda, e.{space}g.)."""
         return self._space_after_abbreviation
+
+    @property
+    def space_after_copyright(self):
+        """Space character after copyright sign (©)."""
+        return self._space_after_copyright
+
+    @property
+    def space_after_sound_recording_copyright(self):
+        """Space character after sound recording copyright sign (℗)."""
+        return self._space_after_sound_recording_copyright
 
     @property
     def space_after_numero_sign(self):

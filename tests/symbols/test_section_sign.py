@@ -6,12 +6,13 @@ Port of tests/symbols/section-sign.test.js from typopo.
 
 import pytest
 
-from pytypopo.const import NARROW_NBSP, PARAGRAPH_SIGN, SECTION_SIGN
+from pytypopo.const import PARAGRAPH_SIGN, SECTION_SIGN
 from pytypopo.modules.symbols.section_sign import fix_section_sign, fix_spacing_around_symbol
 from tests.conftest import ALL_LOCALES
 from tests.symbols.conftest import (
     SYMBOL_SET,
     expand_symbol_template,
+    get_space_after_symbol,
 )
 
 
@@ -69,7 +70,10 @@ def generate_fix_spacing_around_symbol_tests(symbol_name, symbol):
         for input_template, expected_template in SYMBOL_SET.items():
             input_text = expand_symbol_template(input_template, symbol_name, locale)
             expected = expand_symbol_template(expected_template, symbol_name, locale)
-            test_cases.append(pytest.param(input_text, expected, id=f"{symbol_name}-{locale}: {input_template[:25]}"))
+            # Include locale in the test case so we can use the correct space_after
+            test_cases.append(
+                pytest.param(input_text, expected, locale, id=f"{symbol_name}-{locale}: {input_template[:25]}")
+            )
 
     return test_cases
 
@@ -78,17 +82,19 @@ class TestHelperFixSpacingAroundSymbol:
     """Unit tests for fix_spacing_around_symbol helper function."""
 
     @pytest.mark.parametrize(
-        ("input_text", "expected"), generate_fix_spacing_around_symbol_tests("sectionSign", SECTION_SIGN)
+        ("input_text", "expected", "locale"), generate_fix_spacing_around_symbol_tests("sectionSign", SECTION_SIGN)
     )
-    def test_helper_fix_spacing_section_sign(self, input_text, expected):
+    def test_helper_fix_spacing_section_sign(self, input_text, expected, locale):
         """Test fix_spacing_around_symbol directly with section sign."""
-        result = fix_spacing_around_symbol(input_text, SECTION_SIGN, NARROW_NBSP)
+        space_after = get_space_after_symbol(locale, "sectionSign")
+        result = fix_spacing_around_symbol(input_text, SECTION_SIGN, space_after)
         assert result == expected
 
     @pytest.mark.parametrize(
-        ("input_text", "expected"), generate_fix_spacing_around_symbol_tests("paragraphSign", PARAGRAPH_SIGN)
+        ("input_text", "expected", "locale"), generate_fix_spacing_around_symbol_tests("paragraphSign", PARAGRAPH_SIGN)
     )
-    def test_helper_fix_spacing_paragraph_sign(self, input_text, expected):
+    def test_helper_fix_spacing_paragraph_sign(self, input_text, expected, locale):
         """Test fix_spacing_around_symbol directly with paragraph sign."""
-        result = fix_spacing_around_symbol(input_text, PARAGRAPH_SIGN, NARROW_NBSP)
+        space_after = get_space_after_symbol(locale, "paragraphSign")
+        result = fix_spacing_around_symbol(input_text, PARAGRAPH_SIGN, space_after)
         assert result == expected

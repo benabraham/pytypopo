@@ -11,16 +11,27 @@ from pytypopo.const import (
     PARAGRAPH_SIGN,
     SECTION_SIGN,
 )
+from pytypopo.locale.base import get_locale
 
 
 # Space to use after symbols - varies by locale
-# For most locales, narrow non-breaking space is used
 # (This matches typopo's locale.spaceAfter behavior)
 def get_space_after_symbol(locale, symbol_name):
     """Get the space character to use after a symbol for a given locale."""
-    # In typopo, this is determined by locale.spaceAfter[symbolName]
-    # For now, we use narrow nbsp as that's the common case
-    return NARROW_NBSP
+    loc = get_locale(locale)
+    # Map symbol name to locale property
+    if symbol_name == "sectionSign":
+        return loc.space_after_section_sign
+    elif symbol_name == "paragraphSign":
+        return loc.space_after_paragraph_sign
+    elif symbol_name == "numeroSign":
+        return loc.space_after_numero_sign
+    elif symbol_name == "copyright":
+        return loc.space_after_copyright
+    elif symbol_name == "soundRecordingCopyright":
+        return loc.space_after_sound_recording_copyright
+    else:
+        return NBSP  # default fallback
 
 
 # Symbol mapping for test template expansion
@@ -106,9 +117,9 @@ SYMBOL_SET = {
     # Start/end of string
     "${symbol}text": "${symbol}${space}text",
     "text ${symbol}1": "text ${symbol}${space}1",
-    # Already correct (narrow nbsp used)
-    f"Article ${{symbol}}{NARROW_NBSP}1": f"Article ${{symbol}}{NARROW_NBSP}1",
-    f"Document ${{symbol}}{NARROW_NBSP}123": f"Document ${{symbol}}{NARROW_NBSP}123",
+    # Already has spacing - normalize to locale-specific space
+    f"Article ${{symbol}}{NARROW_NBSP}1": "Article ${symbol}${space}1",
+    f"Document ${{symbol}}{NARROW_NBSP}123": "Document ${symbol}${space}123",
 }
 
 # Additional tests with quotes
