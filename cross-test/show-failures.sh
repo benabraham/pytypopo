@@ -24,6 +24,12 @@ fi
 cd js-adapter
 
 if [[ "$1" == "--json" ]]; then
+    if ! command -v jq &> /dev/null; then
+        echo "Error: jq required for --json output"
+        echo "  macOS: brew install jq"
+        echo "  Linux: apt install jq / dnf install jq"
+        exit 1
+    fi
     # JSON output
     PYTHON_BRIDGE_URL=http://127.0.0.1:9876 npx vitest run --reporter=json 2>/dev/null | \
         jq '[.testResults[].assertionResults[] | select(.status == "failed") | {name: .fullName, expected: .failureMessages[0]}]'

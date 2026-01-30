@@ -55,6 +55,16 @@ uv run ruff check src tests
 uv run ruff format src tests
 ```
 
+## Development
+
+### Prerequisites
+
+| Tool | Required For | Install |
+|------|--------------|---------|
+| uv | All development | https://docs.astral.sh/uv/ |
+| Node.js + npm | Cross-testing | https://nodejs.org/ |
+| jq | Cross-test `--json` flag | `brew install jq` / `apt install jq` |
+
 ## API
 
 ```python
@@ -108,7 +118,7 @@ Pipeline order matters (prevents re-matching corrected patterns):
 
 ## Cross-Testing (brotest)
 
-Run Python against the upstream JS test suite to verify parity:
+Verifies Python port matches JS behavior:
 
 ```bash
 # Run full cross-test suite
@@ -119,7 +129,12 @@ Run Python against the upstream JS test suite to verify parity:
 
 # Test specific module
 ./cross-test/show-failures.sh dash
+
+# JSON output (requires jq)
+./cross-test/show-failures.sh --json
 ```
+
+See `cross-test/README.md` for architecture details.
 
 Use the **brotest** agent to fix parity failures:
 - Compares JS vs Python locale configs
