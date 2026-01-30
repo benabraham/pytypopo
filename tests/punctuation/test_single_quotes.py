@@ -523,34 +523,39 @@ class TestIdentifySingleQuotePairAroundSingleWordFalsePositives:
 
 
 class TestSwapSingleQuotesAndTerminalPunctuation:
-    """Swap single quotes and terminal punctuation."""
+    """Swap single quotes and terminal punctuation.
+
+    Note: The swap only happens for single quotes inside double quotes at the end.
+    Standalone single quotes are NOT modified by JS typopo.
+    """
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_quoted_part_period_inside(self, locale_id):
-        """Move period outside of quoted part."""
+        """Standalone single quote with period inside - stays unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"Sometimes it can be only a {q['lsq']}quoted part.{q['rsq']}"
-        expected = f"Sometimes it can be only a {q['lsq']}quoted part{q['rsq']}."
+        # JS does NOT move period outside for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_two_quoted_parts(self, locale_id):
-        """Move periods outside of two quoted parts."""
+        """Single-word quote with period - period moves outside (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"Sometimes it can be only a {q['lsq']}quoted{q['rsq']} {q['lsq']}part.{q['rsq']}"
+        # JS moves period outside for single-word quotes via fix_quoted_word_punctuation
         expected = f"Sometimes it can be only a {q['lsq']}quoted{q['rsq']} {q['lsq']}part{q['rsq']}."
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
         assert result == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_then_quoted_part(self, locale_id):
-        """Whole sentence keeps period, quoted part moves it."""
+        """Standalone single quotes - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"{q['lsq']}A whole sentence.{q['rsq']} Only a {q['lsq']}quoted part.{q['rsq']}"
-        expected = f"{q['lsq']}A whole sentence.{q['rsq']} Only a {q['lsq']}quoted part{q['rsq']}."
+        # JS does NOT move period outside for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_question_outside_quoted_part(self, locale_id):
@@ -572,21 +577,21 @@ class TestSwapSingleQuotesAndTerminalPunctuation:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_two_quoted_parts_periods(self, locale_id):
-        """Two quoted parts both move periods outside."""
+        """Two standalone single quotes - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"a {q['lsq']}quoted part.{q['rsq']} A {q['lsq']}quoted part.{q['rsq']}"
-        expected = f"a {q['lsq']}quoted part{q['rsq']}. A {q['lsq']}quoted part{q['rsq']}."
+        # JS does NOT move period outside for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_quoted_part_then_whole_sentence(self, locale_id):
-        """Quoted part moves period, whole sentence keeps it."""
+        """Standalone single quotes - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"Only a {q['lsq']}quoted part.{q['rsq']} {q['lsq']}A whole sentence.{q['rsq']}"
-        expected = f"Only a {q['lsq']}quoted part{q['rsq']}. {q['lsq']}A whole sentence.{q['rsq']}"
+        # JS does NOT move period outside for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_quoted_part_in_sentence_then_whole_sentence(self, locale_id):
@@ -633,57 +638,64 @@ class TestSwapSingleQuotesAndTerminalPunctuation:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_after_period(self, locale_id):
-        """Whole quoted sentence after period moves punct inside."""
+        """Standalone single quotes - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"He was ok. {q['lsq']}He was ok{q['rsq']}."
-        expected = f"He was ok. {q['lsq']}He was ok.{q['rsq']}"
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_middle(self, locale_id):
-        """Whole quoted sentence in middle moves punct inside."""
-        q = get_quotes(locale_id)
-        text = f"He was ok. {q['lsq']}He was ok{q['rsq']}. He was ok."
-        expected = f"He was ok. {q['lsq']}He was ok.{q['rsq']} He was ok."
+        """Standalone single quotes in middle - stay unchanged (JS behavior).
+
+        Note: Standalone quotes become apostrophes (both 0x2019), not locale quote pairs.
+        Since both are the same char, the swap pattern doesn't match, so no change.
+        """
+        # Standalone quotes become apostrophes (both 0x2019)
+        text = f"He was ok. {APOSTROPHE}He was ok{APOSTROPHE}. He was ok."
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_after_question(self, locale_id):
-        """Whole quoted sentence after question moves punct inside."""
+        """Standalone single quotes after question - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"He was ok? {q['lsq']}He was ok{q['rsq']}."
-        expected = f"He was ok? {q['lsq']}He was ok.{q['rsq']}"
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_at_start_period(self, locale_id):
-        """Whole quoted sentence at start moves period inside."""
+        """Standalone single quotes at start - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"{q['lsq']}He was ok{q['rsq']}."
-        expected = f"{q['lsq']}He was ok.{q['rsq']}"
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_at_start_question(self, locale_id):
-        """Whole quoted sentence at start moves question inside."""
+        """Standalone single quotes at start with question - stay unchanged (JS behavior)."""
         q = get_quotes(locale_id)
         text = f"{q['lsq']}He was ok{q['rsq']}?"
-        expected = f"{q['lsq']}He was ok?{q['rsq']}"
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_whole_sentence_at_start_followed_by_sentence(self, locale_id):
-        """Whole quoted sentence at start followed by another sentence."""
-        q = get_quotes(locale_id)
-        text = f"{q['lsq']}He was ok{q['rsq']}. He was ok."
-        expected = f"{q['lsq']}He was ok.{q['rsq']} He was ok."
+        """Standalone single quotes followed by sentence - stay unchanged (JS behavior).
+
+        Note: Standalone quotes become apostrophes (both 0x2019), not locale quote pairs.
+        """
+        # Standalone quotes become apostrophes (both 0x2019)
+        text = f"{APOSTROPHE}He was ok{APOSTROPHE}. He was ok."
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
 
 class TestIdentifyUnpairedLeftSingleQuote:
@@ -1579,12 +1591,16 @@ class TestSwapSingleQuotesAndTerminalPunctuationUnit:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_quoted_part_middle_of_paragraph_two_parts(self, locale_id):
-        """Two quoted parts in middle of paragraph - move periods outside."""
-        q = get_quotes(locale_id)
-        text = f"a {q['lsq']}quoted part.{q['rsq']} A {q['lsq']}quoted part.{q['rsq']}"
-        expected = f"a {q['lsq']}quoted part{q['rsq']}. A {q['lsq']}quoted part{q['rsq']}."
+        """Two quoted parts in middle of paragraph - stay unchanged (JS behavior).
+
+        Note: Standalone quotes become apostrophes (both 0x2019), not locale quote pairs.
+        Since both are the same char, the swap pattern doesn't match.
+        """
+        # Standalone quotes become apostrophes (both 0x2019)
+        text = f"a {APOSTROPHE}quoted part.{APOSTROPHE} A {APOSTROPHE}quoted part.{APOSTROPHE}"
+        # JS does NOT move punctuation for standalone single quotes
         result = swap_single_quotes_and_terminal_punctuation(text, Locale(locale_id))
-        assert result == expected
+        assert result == text  # unchanged
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_question_mark_no_swap_needed(self, locale_id):
@@ -1626,11 +1642,15 @@ class TestModuleIntegrationSingleQuotesWithinDoubleQuotes:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_multiple_words_in_single_quotes_within_double_quotes(self, locale_id):
-        """Multiple words in single quotes within double quotes."""
+        """Multiple words in single quotes within double quotes.
+
+        JS behavior: punctuation moves INSIDE the closing single quote.
+        """
         q = get_quotes(locale_id)
         text = f"{q['ldq']}What about 'word word', is that good?{q['rdq']}"
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)
-        expected = f"{q['ldq']}What about {q['lsq']}word word{q['rsq']}, is that good?{q['rdq']}"
+        # JS moves comma inside the closing single quote
+        expected = f"{q['ldq']}What about {q['lsq']}word word,{q['rsq']} is that good?{q['rdq']}"
         assert result == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
@@ -1644,11 +1664,15 @@ class TestModuleIntegrationSingleQuotesWithinDoubleQuotes:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_single_quotes_with_mixed_punctuation(self, locale_id):
-        """Single quotes with mixed punctuation including apostrophe contraction."""
+        """Single quotes with mixed punctuation including apostrophe contraction.
+
+        JS behavior: punctuation moves INSIDE the closing single quote.
+        """
         q = get_quotes(locale_id)
         text = f"Within double quotes {q['ldq']}there are single 'quotes with mix'd punctuation', you see{q['rdq']}."
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)
-        expected = f"Within double quotes {q['ldq']}there are single {q['lsq']}quotes with mix{APOSTROPHE}d punctuation{q['rsq']}, you see{q['rdq']}."
+        # JS moves comma inside the closing single quote
+        expected = f"Within double quotes {q['ldq']}there are single {q['lsq']}quotes with mix{APOSTROPHE}d punctuation,{q['rsq']} you see{q['rdq']}."
         assert result == expected
 
 
@@ -1657,11 +1681,15 @@ class TestModuleIntegrationReplaceSinglePrimeWithSingleQuote:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_localhost_3000_in_quotes(self, locale_id):
-        """'Localhost 3000' - prime after number becomes right quote."""
+        """'Localhost 3000' - prime after number becomes right quote.
+
+        JS behavior: punctuation moves INSIDE the closing single quote.
+        """
         q = get_quotes(locale_id)
         text = f"{q['ldq']}What about 'Localhost 3000', is that good?{q['rdq']}"
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)
-        expected = f"{q['ldq']}What about {q['lsq']}Localhost 3000{q['rsq']}, is that good?{q['rdq']}"
+        # JS moves comma inside the closing single quote
+        expected = f"{q['ldq']}What about {q['lsq']}Localhost 3000,{q['rsq']} is that good?{q['rdq']}"
         assert result == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
@@ -1807,20 +1835,38 @@ class TestIdentifyUnpairedRightSingleQuoteModuleLevel:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_word_period_single_quote_inside_double_quotes(self, locale_id):
-        """Inside double quotes: word + period + single quote."""
+        """Inside double quotes: word + period + single quote.
+
+        en-us: American style - punctuation moves outside apostrophe
+        Other locales: European style - punctuation stays inside (order preserved)
+        """
         q = get_quotes(locale_id)
         text = f"{q['ldq']}word.'{q['rdq']}"
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)
-        expected = f"{q['ldq']}word.{APOSTROPHE}{q['rdq']}"
+        if locale_id == "en-us":
+            # American style: punctuation moves outside
+            expected = f"{q['ldq']}word{APOSTROPHE}.{q['rdq']}"
+        else:
+            # European style: punctuation order preserved
+            expected = f"{q['ldq']}word.{APOSTROPHE}{q['rdq']}"
         assert result == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_word_exclamation_single_quote_inside_double_quotes(self, locale_id):
-        """Inside double quotes: word + exclamation + single quote."""
+        """Inside double quotes: word + exclamation + single quote.
+
+        en-us: American style - punctuation moves outside apostrophe
+        Other locales: European style - punctuation stays inside (order preserved)
+        """
         q = get_quotes(locale_id)
         text = f"{q['ldq']}word!'{q['rdq']}"
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)
-        expected = f"{q['ldq']}word!{APOSTROPHE}{q['rdq']}"
+        if locale_id == "en-us":
+            # American style: punctuation moves outside
+            expected = f"{q['ldq']}word{APOSTROPHE}!{q['rdq']}"
+        else:
+            # European style: punctuation order preserved
+            expected = f"{q['ldq']}word!{APOSTROPHE}{q['rdq']}"
         assert result == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)

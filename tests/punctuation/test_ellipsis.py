@@ -291,8 +291,9 @@ class TestFixEllipsisBetweenSentencesWithQuotes:
     """Tests for ellipsis between sentences with quotes (locale-specific)."""
 
     # Tests from JS: ellipsisBetweenSentencesUnitSet (quote tests)
-    # These use typographic quotes that match en-us/de-de/cs/sk locale's terminal_quotes
+    # These use typographic quotes that match en-us locale's terminal_quotes
     # Note: Uses RIGHT_DOUBLE_QUOTE (") and RIGHT_SINGLE_QUOTE (')
+    # de-de/cs/sk use LEFT_DOUBLE_QUOTE as closing quote so only test with en-us
     QUOTE_TESTS = {
         # Already correct
         f"\u2018What are you saying?\u2019 {ELLIPSIS} She did not answer.": (
@@ -311,8 +312,9 @@ class TestFixEllipsisBetweenSentencesWithQuotes:
         ),
     }
 
-    # Locales that use RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
-    SUPPORTED_LOCALES = ["en-us", "de-de", "cs", "sk"]
+    # Only en-us uses RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
+    # de-de, cs, sk use LEFT_DOUBLE_QUOTE (201c) as closing quote
+    SUPPORTED_LOCALES = ["en-us"]
 
     @pytest.mark.parametrize(("input_text", "expected"), QUOTE_TESTS.items())
     @pytest.mark.parametrize("locale", SUPPORTED_LOCALES)
@@ -345,14 +347,15 @@ class TestFixAposiopesisEndingParagraphWithQuotes:
 
     # Tests from JS: aposiopesisEndingParagraphUnitSet (with quotes)
     # These tests use RIGHT_DOUBLE_QUOTE (") and RIGHT_SINGLE_QUOTE (')
-    # which are the terminal quotes for en-us, de-de, cs, sk but NOT rue
+    # which are the terminal quotes for en-us only
+    # de-de, cs, sk use LEFT_DOUBLE_QUOTE as closing quote
     QUOTE_TESTS = {
         f"\u201cSentence ending {ELLIPSIS}\u201d": f"\u201cSentence ending{ELLIPSIS}\u201d",
         f"\u2018Sentence ending {ELLIPSIS}\u2019": f"\u2018Sentence ending{ELLIPSIS}\u2019",
     }
 
-    # Locales that use RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
-    SUPPORTED_LOCALES = ["en-us", "de-de", "cs", "sk"]
+    # Only en-us uses RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
+    SUPPORTED_LOCALES = ["en-us"]
 
     @pytest.mark.parametrize(("input_text", "expected"), QUOTE_TESTS.items())
     @pytest.mark.parametrize("locale", SUPPORTED_LOCALES)
@@ -457,7 +460,7 @@ class TestFixEllipsisWithQuotes:
 
     These tests combine aposiopesisEndingParagraphUnitSet and ellipsisBetweenSentencesUnitSet
     that use RIGHT_DOUBLE_QUOTE (") and RIGHT_SINGLE_QUOTE (') which are terminal quotes
-    for en-us, de-de, cs, sk but NOT rue.
+    for en-us only. de-de, cs, sk use LEFT_DOUBLE_QUOTE as closing quote.
     """
 
     # Tests from JS: aposiopesisEndingParagraphUnitSet (2 entries)
@@ -482,8 +485,8 @@ class TestFixEllipsisWithQuotes:
         ),
     }
 
-    # Locales that use RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
-    SUPPORTED_LOCALES = ["en-us", "de-de", "cs", "sk"]
+    # Only en-us uses RIGHT_DOUBLE_QUOTE and RIGHT_SINGLE_QUOTE as terminal quotes
+    SUPPORTED_LOCALES = ["en-us"]
 
     @pytest.mark.parametrize(("input_text", "expected"), ENDING_PARAGRAPH_QUOTE_TESTS.items())
     @pytest.mark.parametrize("locale", SUPPORTED_LOCALES)

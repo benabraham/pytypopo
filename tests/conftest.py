@@ -16,6 +16,10 @@ def locale(request):
     return request.param
 
 
+# Space constants
+NBSP = "\u00a0"  # Non-breaking space
+SPACE = " "  # Regular space
+
 # Locale-specific tokens for test data substitution
 # These will be replaced with actual locale values at test time
 # Quote characters:
@@ -28,30 +32,40 @@ LOCALE_TOKENS = {
         "double_close": "\u201d",  # RIGHT DOUBLE QUOTATION MARK
         "single_open": "\u2018",  # LEFT SINGLE QUOTATION MARK
         "single_close": "\u2019",  # RIGHT SINGLE QUOTATION MARK
+        "abbr_space": "",  # en-us: no space between abbreviated words
+        "copyright_space": NBSP,  # en-us: nbsp after copyright symbols
     },
     "de-de": {
         "double_open": "\u201e",  # DOUBLE LOW-9 QUOTATION MARK
         "double_close": "\u201d",  # RIGHT DOUBLE QUOTATION MARK
         "single_open": "\u201a",  # SINGLE LOW-9 QUOTATION MARK
         "single_close": "\u2019",  # RIGHT SINGLE QUOTATION MARK
+        "abbr_space": NBSP,  # de-de: nbsp between abbreviated words
+        "copyright_space": NBSP,  # de-de: nbsp after copyright symbols
     },
     "cs": {
         "double_open": "\u201e",  # DOUBLE LOW-9 QUOTATION MARK
         "double_close": "\u201d",  # RIGHT DOUBLE QUOTATION MARK
         "single_open": "\u201a",  # SINGLE LOW-9 QUOTATION MARK
         "single_close": "\u2019",  # RIGHT SINGLE QUOTATION MARK
+        "abbr_space": NBSP,  # cs: nbsp between abbreviated words
+        "copyright_space": SPACE,  # cs: regular space after copyright symbols
     },
     "sk": {
         "double_open": "\u201e",  # DOUBLE LOW-9 QUOTATION MARK
         "double_close": "\u201d",  # RIGHT DOUBLE QUOTATION MARK
         "single_open": "\u201a",  # SINGLE LOW-9 QUOTATION MARK
         "single_close": "\u2019",  # RIGHT SINGLE QUOTATION MARK
+        "abbr_space": NBSP,  # sk: nbsp between abbreviated words
+        "copyright_space": NBSP,  # sk: nbsp after copyright symbols
     },
     "rue": {
         "double_open": "\u00ab",  # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
         "double_close": "\u00bb",  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
         "single_open": "\u2039",  # SINGLE LEFT-POINTING ANGLE QUOTATION MARK
         "single_close": "\u203a",  # SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+        "abbr_space": NBSP,  # rue: nbsp between abbreviated words
+        "copyright_space": NBSP,  # rue: nbsp after copyright symbols
     },
 }
 

@@ -4,7 +4,8 @@ Fix numero sign (No) spacing.
 Port of src/lib/symbols/numero-sign.js from typopo.
 """
 
-from pytypopo.const import NARROW_NBSP, NUMERO_SIGN
+from pytypopo.const import NUMERO_SIGN
+from pytypopo.locale.base import get_locale
 from pytypopo.modules.symbols.section_sign import fix_spacing_around_symbol
 
 
@@ -17,12 +18,13 @@ def fix_numero_sign(text, locale):
 
     Args:
         text: Input text to fix
-        locale: Language locale (determines spacing after symbol)
+        locale: Language locale string or Locale instance (determines spacing after symbol)
 
     Returns:
         Text with numero sign spacing fixed
     """
-    # For all locales, use narrow nbsp after numero sign
-    space_after = NARROW_NBSP
+    loc = get_locale(locale)
+    # Use locale-specific spacing after numero sign
+    space_after = loc.space_after_numero_sign
 
     return fix_spacing_around_symbol(text, NUMERO_SIGN, space_after)

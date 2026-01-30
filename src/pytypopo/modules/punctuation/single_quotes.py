@@ -16,11 +16,12 @@ import re
 from pytypopo.const import (
     ALL_CHARS,
     APOSTROPHE,
+    CLOSING_BRACKETS,
     ELLIPSIS,
     EM_DASH,
     EN_DASH,
-    LOWERCASE_CHARS,
     NBSP,
+    OPENING_BRACKETS,
     ROMAN_NUMERALS,
     SENTENCE_PUNCTUATION,
     SINGLE_PRIME,
@@ -192,13 +193,13 @@ def identify_unpaired_left_single_quote(text, locale):
 
     Algorithm:
     Find left single quotes:
-    - following a space, en dash or em dash
-    - preceding a word
+    - following a space, en dash or em dash (or at start of string)
+    - preceding a word, ellipsis, or opening bracket
     """
     pattern = re.compile(
         rf"(^|[{SPACES}{EM_DASH}{EN_DASH}])"
         rf"({SINGLE_QUOTE_ADEPTS}|,)"
-        rf"([{ALL_CHARS}{ELLIPSIS}])"
+        rf"([{ALL_CHARS}{ELLIPSIS}{OPENING_BRACKETS}\{{])"
     )
     return pattern.sub(r"\1{{typopo__lsq--unpaired}}\3", text)
 
@@ -209,12 +210,12 @@ def identify_unpaired_right_single_quote(text, locale):
 
     Algorithm:
     Find right single quotes:
-    - following a word
+    - following a word, digit, or closing bracket
     - optionally, following a sentence punctuation
     - optionally, preceding a space or a sentence punctuation
     """
     pattern = re.compile(
-        rf"([{ALL_CHARS}])"
+        rf"([{ALL_CHARS}\d{CLOSING_BRACKETS}])"
         rf"([{SENTENCE_PUNCTUATION}{ELLIPSIS}])?"
         rf"({SINGLE_QUOTE_ADEPTS})"
         rf"([ {SENTENCE_PUNCTUATION}])?"
@@ -350,100 +351,114 @@ def replace_single_prime_with_single_quote(text, locale):
     return text
 
 
-def swap_single_quotes_and_terminal_punctuation(text, locale):
+def fix_quoted_word_punctuation(text, locale):
     """
-    Swap single quotes and terminal punctuation for a quoted part.
+    Fix punctuation placement for single-word quoted content.
 
-    There are two different rules to follow quotes:
-    1. Quotes contain only quoted material:
-       'Sometimes it can be a whole sentence.'
-       Sometimes it can be only a 'quoted part'.
-       The difference is where the terminal and sentence pause punctuation is.
-    2. American editorial style:
-       Similar as the first rule, but commas (,) and periods (.) go before
-       closing quotation marks, regardless whether they are part of the material.
+    Moves periods `.`, commas `,`, semicolons `;`, and colons `:` OUTSIDE
+    the closing quote for single-word quotes (quotes containing no spaces).
 
-    The aim here is to support the first rule.
+    Does NOT touch `!`, `?`, or `...` (ambiguous without context).
 
-    Examples:
-        'quoted part.' -> 'quoted part'.  (partial quote)
-        'He was ok'. -> 'He was ok.'  (full sentence at start)
+    Example:
+        'word.' -> 'word'.
+        'hello,' -> 'hello',
 
     Exception:
-        Byl to 'Karel IV.', ktery - preserves roman numeral
+        'IV.' - preserves roman numeral punctuation
     """
     loc = _get_locale(locale)
     left_quote = re.escape(loc.single_quote_open)
     right_quote = re.escape(loc.single_quote_close)
 
-    # Case 1: Quoted part within a sentence - move punctuation outside
-    # Match: not-sentence-punct + space + left-quote + content + not-roman + terminal-punct + right-quote
+    # Pattern matches: leftQuote + content (no spaces) + notRoman + punct + rightQuote
+    # JS: ([^spaces rightQuote]+?) ([^romanNumerals sentencePunctuation]) ([sentencePunctuation]{1,}) (rightQuote)
+    pattern = re.compile(
+        rf"({left_quote})"
+        rf"([^{SPACES}{loc.single_quote_close}]+?)"
+        rf"([^{ROMAN_NUMERALS}{SENTENCE_PUNCTUATION}])"
+        rf"([{SENTENCE_PUNCTUATION}]{{1,}})"
+        rf"({right_quote})"
+    )
+
+    def replacer(match):
+        left_q, content, not_roman, punct, right_q = match.groups()
+        # Only move single punctuation that is .,;: outside
+        if len(punct) == 1 and punct in ".,;:":
+            return left_q + content + not_roman + right_q + punct
+        return match.group(0)
+
+    return pattern.sub(replacer, text)
+
+
+def fix_quoted_sentence_punctuation(text, locale):
+    """
+    Fix punctuation placement for quoted sentence or fragment of words.
+
+    Rules:
+    1. Move periods `.`, commas `,`, ellipses `...`, exclamation `!` and
+       question marks `?` INSIDE the quoted part (for multi-word fragments)
+    2. Move colons `:` and semicolons `;` OUTSIDE the quoted part
+    3. Move terminal punctuation (.?!...) OUTSIDE when quoted fragment is
+       at the end of a double-quoted sentence
+
+    Example:
+        'quoted fragment'. -> 'quoted fragment.'  (inside)
+        'quoted fragment:' -> 'quoted fragment':  (colon outside)
+        "...'quoted fragment.'" -> "...'quoted fragment'."  (at end of double quote)
+    """
+    loc = _get_locale(locale)
+    left_quote = re.escape(loc.single_quote_open)
+    right_quote = re.escape(loc.single_quote_close)
+    right_double_quote = re.escape(loc.double_quote_close)
+
+    # Step 1: Move punctuation INSIDE quotes (for multi-word fragments within a sentence)
+    # Pattern: leftQuote + content + space + notRoman (2+ chars) + rightQuote + punct + notRightDoubleQuote
+    # JS: (leftSingleQuote)(.+)([spaces])(?!leftSingleQuote)([^romanNumerals]{2,})(rightSingleQuote)([sentencePunctuation ellipsis])([^rightDoubleQuote])
     pattern1 = re.compile(
-        rf"([^{SENTENCE_PUNCTUATION}])"
-        rf"([{SPACES}])"
         rf"({left_quote})"
-        rf"([^{right_quote}]+?)"
-        rf"([^{ROMAN_NUMERALS}])"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
+        rf"(.+)"
+        rf"([{SPACES}])(?!{left_quote})"
+        rf"([^{ROMAN_NUMERALS}]{{2,}})"
         rf"({right_quote})"
+        rf"([{SENTENCE_PUNCTUATION}{ELLIPSIS}])"
+        rf"([^{right_double_quote}])"
     )
-    text = pattern1.sub(r"\1\2\3\4\5\7\6", text)
+    # Swap $5 and $6: move punct inside before rightQuote
+    text = pattern1.sub(r"\1\2\3\4\6\5\7", text)
 
-    # Case 2: Quoted sentence within unquoted sentence - move punct inside
-    # Match: not-sentence-punct + space + left-quote + content + not-roman + right-quote + terminal-punct + space + lowercase
+    # Step 2: Move colons and semicolons OUTSIDE quotes
+    # JS: ([:;])(rightSingleQuote) -> $2$1
     pattern2 = re.compile(
-        rf"([^{SENTENCE_PUNCTUATION}])"
-        rf"([{SPACES}])"
-        rf"({left_quote})"
-        rf"(.+?)"
-        rf"([^{ROMAN_NUMERALS}])"
+        rf"([:;])"
         rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"([{SPACES}])"
-        rf"([{LOWERCASE_CHARS}])"
     )
-    text = pattern2.sub(r"\1\2\3\4\5\7\6\8\9", text)
+    text = pattern2.sub(r"\2\1", text)
 
-    # Case 3: Whole quoted sentence at start of paragraph - move punct inside
-    # Match: start-of-line + left-quote + content + not-roman + right-quote + terminal-punct + non-word-boundary
+    # Step 3: Move terminal punctuation (.?!...) OUTSIDE when at end of double-quoted sentence
+    # JS: ([terminalPunctuation ellipsis])(rightSingleQuote)(rightDoubleQuote) -> $2$1$3
     pattern3 = re.compile(
-        rf"(^{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
         rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)",
-        re.MULTILINE,
-    )
-    text = pattern3.sub(r"\1\3\2\4", text)
-
-    # Case 4: Whole quoted sentence after a sentence - move punct inside
-    pattern4 = re.compile(
-        rf"([{SENTENCE_PUNCTUATION}]"
-        rf"[{SPACES}]"
-        rf"{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
         rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)"
+        rf"({right_double_quote})"
     )
-    text = pattern4.sub(r"\1\3\2\4", text)
+    text = pattern3.sub(r"\2\1\3", text)
 
-    # Case 5: Whole quoted sentence after another quoted sentence - move punct inside
-    pattern5 = re.compile(
-        rf"([{SENTENCE_PUNCTUATION}]"
-        rf"{right_quote}"
-        rf"[{SPACES}]"
-        rf"{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)"
-    )
-    text = pattern5.sub(r"\1\3\2\4", text)
+    return text
 
+
+def swap_single_quotes_and_terminal_punctuation(text, locale):
+    """
+    Swap single quotes and terminal punctuation for a quoted part.
+
+    This is a compatibility wrapper that calls the two specialized functions
+    in the correct order (matching the JS implementation).
+
+    See fix_quoted_word_punctuation and fix_quoted_sentence_punctuation
+    for the actual logic.
+    """
+    text = fix_quoted_word_punctuation(text, locale)
+    text = fix_quoted_sentence_punctuation(text, locale)
     return text
 
 

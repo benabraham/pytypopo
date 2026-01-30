@@ -4,7 +4,7 @@ pytypopo - Multilingual typography fixer
 Python port of typopo (https://github.com/surfinzap/typopo/)
 """
 
-__version__ = "0.1.0"
+__version__ = "2.9.1+py0"
 
 from pytypopo.locale import get_locale
 from pytypopo.modules.punctuation import (

@@ -190,12 +190,14 @@ def add_nbsp_within_ordinal_date(text, locale):
     first_space = locale.ordinal_date_first_space
     second_space = locale.ordinal_date_second_space
 
+    # Day: 1-2 digits, Month: 1-2 digits, Year: exactly 4 digits
+    # This prevents version numbers like 3.0.0 from being matched
     pattern = re.compile(
-        rf"(\d)(\.)"
+        rf"(\d{{1,2}})(\.)"
         rf"([{SPACES}]?)"
-        rf"(\d)(\.)"
+        rf"(\d{{1,2}})(\.)"
         rf"([{SPACES}]?)"
-        rf"(\d)"
+        rf"(\d{{4}})"
     )
     return pattern.sub(rf"\1\2{first_space}\4\5{second_space}\7", text)
 
@@ -283,9 +285,8 @@ def fix_nbsp_for_name_with_regnal_number(text, locale):
 
     roman_indicator = locale.roman_ordinal_indicator
 
-    # Skip if locale doesn't use roman ordinal indicators
-    if not roman_indicator:
-        return text
+    # Note: even if roman_indicator is empty (e.g., en-us), we still
+    # need to add nbsp. Empty string in regex becomes empty capture group.
 
     # Match name + space + roman numeral + ordinal indicator + optional nbsp
     pattern = re.compile(

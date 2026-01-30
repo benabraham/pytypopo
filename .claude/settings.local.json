@@ -2,12 +2,14 @@
   "env": {
     "CLAUDE_TTS": "1",
     "CLAUDE_TTS_VOICE": "af_heart",
-    "CLAUDE_TTS_SPEED": "1.2"
+    "CLAUDE_TTS_SPEED": "1.2",
+    "CLAUDE_CODE_TASK_LIST_ID": "pytypopo"
   },
   "permissions": {
     "allow": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["sequential-thinking"],
-  "outputStyle": "Concise & Efficient"
+  "outputStyle": "Concise & Efficient",
+  "plansDirectory": "./plans/"
 }

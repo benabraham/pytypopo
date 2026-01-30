@@ -12,6 +12,8 @@ from pytypopo.modules.punctuation.double_quotes import (
     add_space_before_left_double_quote,
     fix_direct_speech_intro,
     fix_double_quotes_and_primes,
+    fix_quoted_sentence_punctuation,
+    fix_quoted_word_punctuation,
     identify_double_primes,
     identify_double_quote_pairs,
     place_locale_double_quotes,
@@ -20,7 +22,6 @@ from pytypopo.modules.punctuation.double_quotes import (
     remove_extra_spaces_around_quotes,
     remove_unidentified_double_quote,
     replace_double_prime_with_double_quote,
-    swap_quotes_and_terminal_punctuation,
 )
 from tests.conftest import ALL_LOCALES
 
@@ -97,10 +98,12 @@ class TestDoubleQuotesFalsePositives:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_namespace_pollution_example(self, locale_id):
-        """Programming text about namespace pollution."""
+        """Programming text about namespace pollution - JS moves comma inside multi-word quotes."""
         q = get_quotes(locale_id)
         text = f"common to have {q['ldq']}namespace pollution{q['rdq']}, where completely unrelated code shares global variables."
-        assert fix_double_quotes_and_primes(text, locale_id) == text
+        # JS behavior: fixQuotedSentencePunctuation moves comma inside for multi-word quotes
+        expected = f"common to have {q['ldq']}namespace pollution,{q['rdq']} where completely unrelated code shares global variables."
+        assert fix_double_quotes_and_primes(text, locale_id) == expected
 
 
 # =============================================================================
@@ -540,11 +543,12 @@ class TestIdentifyDoubleQuotePairsModule:
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_primes_vs_quotes_conference(self, locale_id):
-        """ "Conference 2020" and "something in quotes"."""
+        """ "Conference 2020" and "something in quotes". - JS moves period inside multi-word quotes."""
         q = get_quotes(locale_id)
         text = '"Conference 2020" and "something in quotes".'
         result = fix_double_quotes_and_primes(text, locale_id)
-        assert result == f"{q['ldq']}Conference 2020{q['rdq']} and {q['ldq']}something in quotes{q['rdq']}."
+        # JS behavior: fixQuotedSentencePunctuation moves period inside for multi-word quotes
+        assert result == f"{q['ldq']}Conference 2020{q['rdq']} and {q['ldq']}something in quotes.{q['rdq']}"
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_quotes_around_number_with_prime(self, locale_id):
@@ -785,239 +789,106 @@ class TestReplaceDoublePrimeWithDoubleQuote:
 
 
 # =============================================================================
-# SWAP QUOTES AND TERMINAL PUNCTUATION
+# FIX QUOTED WORD PUNCTUATION (JS parity)
 # =============================================================================
 
 
-class TestSwapQuotesAndTerminalPunctuation:
-    """Swap quotes and terminal punctuation within quoted parts.
+class TestFixQuotedWordPunctuation:
+    """Test fix_quoted_word_punctuation - moves .,;: outside single-word quotes.
 
-    Port of swapQuotesAndTerminalPunctuationSet tests from JS.
+    Port of fixQuotedWordPunctuation tests from JS.
     """
 
-    # Quoted part at end of sentence/paragraph
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_outside_quoted_part(self, locale_id):
-        """Move period outside quoted part at end of sentence."""
+    def test_move_period_outside_single_word(self, locale_id):
+        """Move period outside single-word quote."""
         q = get_quotes(locale_id)
-        text = f"Sometimes it can be only a {q['ldq']}quoted part.{q['rdq']}"
-        expected = f"Sometimes it can be only a {q['ldq']}quoted part{q['rdq']}."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        text = f"{q['ldq']}word.{q['rdq']}"
+        expected = f"{q['ldq']}word{q['rdq']}."
+        assert fix_quoted_word_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_outside_multiple_quoted_parts(self, locale_id):
-        """Move period outside when multiple quoted parts."""
+    def test_move_comma_outside_single_word(self, locale_id):
+        """Move comma outside single-word quote."""
         q = get_quotes(locale_id)
-        text = f"Sometimes it can be only a {q['ldq']}quoted{q['rdq']} {q['ldq']}part.{q['rdq']}"
-        expected = f"Sometimes it can be only a {q['ldq']}quoted{q['rdq']} {q['ldq']}part{q['rdq']}."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    # False positives - should not change
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_keep_question_after_quoted_title(self, locale_id):
-        """Keep question mark outside quoted part (asking about title)."""
-        q = get_quotes(locale_id)
-        text = f"Is it {q['ldq']}Amores Perros{q['rdq']}?"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
+        text = f"{q['ldq']}word,{q['rdq']}"
+        expected = f"{q['ldq']}word{q['rdq']},"
+        assert fix_quoted_word_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_keep_period_after_quoted_title(self, locale_id):
-        """Keep period outside quoted title."""
+    def test_move_semicolon_outside_single_word(self, locale_id):
+        """Move semicolon outside single-word quote."""
         q = get_quotes(locale_id)
-        text = f"Look for {q['ldq']}Anguanga{q['rdq']}."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
+        text = f"{q['ldq']}word;{q['rdq']}"
+        expected = f"{q['ldq']}word{q['rdq']};"
+        assert fix_quoted_word_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_mixed_full_sentence_and_quoted_part(self, locale_id):
-        """Keep full sentence, move period in quoted part."""
+    def test_move_colon_outside_single_word(self, locale_id):
+        """Move colon outside single-word quote."""
         q = get_quotes(locale_id)
-        text = f"{q['ldq']}A whole sentence.{q['rdq']} Only a {q['ldq']}quoted part.{q['rdq']}"
-        expected = f"{q['ldq']}A whole sentence.{q['rdq']} Only a {q['ldq']}quoted part{q['rdq']}."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    # Quoted part in middle of paragraph
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_two_quoted_parts_in_middle(self, locale_id):
-        """Move period outside both quoted parts in middle of paragraph."""
-        q = get_quotes(locale_id)
-        text = f"a {q['ldq']}quoted part.{q['rdq']} A {q['ldq']}quoted part.{q['rdq']}"
-        expected = f"a {q['ldq']}quoted part{q['rdq']}. A {q['ldq']}quoted part{q['rdq']}."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        text = f"{q['ldq']}word:{q['rdq']}"
+        expected = f"{q['ldq']}word{q['rdq']}:"
+        assert fix_quoted_word_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_quoted_part_then_full_sentence(self, locale_id):
-        """Quoted part followed by full quoted sentence."""
+    def test_keep_exclamation_inside_single_word(self, locale_id):
+        """Keep exclamation mark inside single-word quote (ambiguous)."""
         q = get_quotes(locale_id)
-        text = f"Only a {q['ldq']}quoted part.{q['rdq']} {q['ldq']}A whole sentence.{q['rdq']}"
-        expected = f"Only a {q['ldq']}quoted part{q['rdq']}. {q['ldq']}A whole sentence.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        text = f"{q['ldq']}word!{q['rdq']}"
+        assert fix_quoted_word_punctuation(text, locale_id) == text
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_quoted_part_middle_of_sentence_no_change(self, locale_id):
-        """Quoted part in middle of sentence, no punctuation to swap."""
+    def test_keep_question_inside_single_word(self, locale_id):
+        """Keep question mark inside single-word quote (ambiguous)."""
         q = get_quotes(locale_id)
-        text = f"Only a {q['ldq']}quoted part{q['rdq']} in a sentence. {q['ldq']}A whole sentence.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
+        text = f"{q['ldq']}word?{q['rdq']}"
+        assert fix_quoted_word_punctuation(text, locale_id) == text
 
-    # Place punctuation within quoted sentence in middle of sentence
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_question_inside_quoted_sentence_mid_sentence(self, locale_id):
-        """Move question mark inside quoted sentence in middle of sentence."""
-        q = get_quotes(locale_id)
-        text = f"Ask {q['ldq']}What's going on in here{q['rdq']}? so you can dig deeper."
-        expected = f"Ask {q['ldq']}What's going on in here?{q['rdq']} so you can dig deeper."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
 
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_question_inside_multiple_quotes(self, locale_id):
-        """Move question marks inside multiple quoted sentences."""
-        q = get_quotes(locale_id)
-        text = f"Ask {q['ldq']}Question{q['rdq']}? and {q['ldq']}Question{q['rdq']}? and done."
-        expected = f"Ask {q['ldq']}Question?{q['rdq']} and {q['ldq']}Question?{q['rdq']} and done."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+# =============================================================================
+# FIX QUOTED SENTENCE PUNCTUATION (JS parity)
+# =============================================================================
+
+
+class TestFixQuotedSentencePunctuation:
+    """Test fix_quoted_sentence_punctuation - moves punctuation inside multi-word quotes.
+
+    Port of fixQuotedSentencePunctuation tests from JS.
+    """
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_question_inside_newline_separated(self, locale_id):
-        """Move question marks inside quotes on separate lines."""
+    def test_move_period_inside_multi_word(self, locale_id):
+        """Move period inside multi-word quote."""
         q = get_quotes(locale_id)
-        text = f"Ask {q['ldq']}Question{q['rdq']}? and done.\nAsk {q['ldq']}Question{q['rdq']}? and done."
-        expected = f"Ask {q['ldq']}Question?{q['rdq']} and done.\nAsk {q['ldq']}Question?{q['rdq']} and done."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        text = f"{q['ldq']}quoted part{q['rdq']}."
+        expected = f"{q['ldq']}quoted part.{q['rdq']}"
+        assert fix_quoted_sentence_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_keep_ellipsis_inside_question_quote(self, locale_id):
-        """Keep ellipsis inside quoted question (already correct)."""
+    def test_move_question_inside_multi_word(self, locale_id):
+        """Move question mark inside multi-word quote."""
         q = get_quotes(locale_id)
-        text = f"Before you ask the {q['ldq']}How often{ELLIPSIS}{q['rdq']} question"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
+        text = f"{q['ldq']}quoted part{q['rdq']}?"
+        expected = f"{q['ldq']}quoted part?{q['rdq']}"
+        assert fix_quoted_sentence_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_ellipsis_inside_quoted(self, locale_id):
-        """Move ellipsis inside quoted text."""
+    def test_move_colon_back_outside(self, locale_id):
+        """Colon is moved inside then back outside."""
         q = get_quotes(locale_id)
-        text = f"Before you ask the {q['ldq']}How often{q['rdq']}{ELLIPSIS} question"
-        expected = f"Before you ask the {q['ldq']}How often{ELLIPSIS}{q['rdq']} question"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        # First period would move inside, then colon stays outside
+        text = f"{q['ldq']}quoted part:{q['rdq']}"
+        expected = f"{q['ldq']}quoted part{q['rdq']}:"
+        assert fix_quoted_sentence_punctuation(text, locale_id) == expected
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_ellipsis_at_start_no_change(self, locale_id):
-        """{ldq}…example{rdq} - ellipsis at start should remain."""
+    def test_move_semicolon_back_outside(self, locale_id):
+        """Semicolon is moved inside then back outside."""
         q = get_quotes(locale_id)
-        text = f"{q['ldq']}{ELLIPSIS}example{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_ellipsis_at_start_with_prefix(self, locale_id):
-        """abc {ldq}…example{rdq} - ellipsis at start should remain."""
-        q = get_quotes(locale_id)
-        text = f"abc {q['ldq']}{ELLIPSIS}example{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_bracket_before_ellipsis_no_change(self, locale_id):
-        """Bracket before the ellipsis, false positive."""
-        q = get_quotes(locale_id)
-        text = f"Ask {q['ldq']}what if (the thing){ELLIPSIS}{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == text
-
-    # Place punctuation within quoted sentence (after sentence outside)
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_period_inside_after_ok(self, locale_id):
-        """He was ok. {ldq}He was ok{rdq}. -> He was ok. {ldq}He was ok.{rdq}"""
-        q = get_quotes(locale_id)
-        text = f"He was ok. {q['ldq']}He was ok{q['rdq']}."
-        expected = f"He was ok. {q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_period_inside_middle_of_text(self, locale_id):
-        """He was ok. {ldq}He was ok{rdq}. He was ok. -> He was ok. {ldq}He was ok.{rdq} He was ok."""
-        q = get_quotes(locale_id)
-        text = f"He was ok. {q['ldq']}He was ok{q['rdq']}. He was ok."
-        expected = f"He was ok. {q['ldq']}He was ok.{q['rdq']} He was ok."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_move_period_inside_after_question(self, locale_id):
-        """He was ok? {ldq}He was ok{rdq}. -> He was ok? {ldq}He was ok.{rdq}"""
-        q = get_quotes(locale_id)
-        text = f"He was ok? {q['ldq']}He was ok{q['rdq']}."
-        expected = f"He was ok? {q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    # Whole quoted sentence
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_inside_whole_quoted_sentence(self, locale_id):
-        """Move period inside whole quoted sentence at paragraph start."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}."
-        expected = f"{q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_two_quoted_sentences_newline(self, locale_id):
-        """Move periods inside two quoted sentences separated by newline."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}.\n{q['ldq']}He was ok{q['rdq']}."
-        expected = f"{q['ldq']}He was ok.{q['rdq']}\n{q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_two_quoted_sentences_space(self, locale_id):
-        """Move periods inside two quoted sentences."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}."
-        expected = f"{q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_three_quoted_sentences(self, locale_id):
-        """Move periods inside three consecutive quoted sentences."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}."
-        expected = f"{q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_four_quoted_sentences(self, locale_id):
-        """Move periods inside four consecutive quoted sentences."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}. {q['ldq']}He was ok{q['rdq']}."
-        expected = f"{q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']} {q['ldq']}He was ok.{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_question_inside_whole_quoted_sentence(self, locale_id):
-        """Move question mark inside whole quoted sentence."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}?"
-        expected = f"{q['ldq']}He was ok?{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_period_quoted_then_unquoted(self, locale_id):
-        """{ldq}He was ok{rdq}. He was ok. -> {ldq}He was ok.{rdq} He was ok."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}He was ok{q['rdq']}. He was ok."
-        expected = f"{q['ldq']}He was ok.{q['rdq']} He was ok."
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    # Ellipsis
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_ellipsis_inside_whole_quoted_sentence(self, locale_id):
-        """Move ellipsis inside whole quoted sentence."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}Types of{q['rdq']}{ELLIPSIS}"
-        expected = f"{q['ldq']}Types of{ELLIPSIS}{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_swap_ellipsis_two_quoted_sentences_newline(self, locale_id):
-        """Move ellipsis inside two quoted sentences separated by newline."""
-        q = get_quotes(locale_id)
-        text = f"{q['ldq']}Types of{q['rdq']}{ELLIPSIS}\n{q['ldq']}Types of{q['rdq']}{ELLIPSIS}"
-        expected = f"{q['ldq']}Types of{ELLIPSIS}{q['rdq']}\n{q['ldq']}Types of{ELLIPSIS}{q['rdq']}"
-        assert swap_quotes_and_terminal_punctuation(text, locale_id) == expected
+        text = f"{q['ldq']}quoted part;{q['rdq']}"
+        expected = f"{q['ldq']}quoted part{q['rdq']};"
+        assert fix_quoted_sentence_punctuation(text, locale_id) == expected
 
 
 # =============================================================================

@@ -15,7 +15,6 @@ import re
 
 from pytypopo.const import (
     ALL_CHARS,
-    CLOSING_BRACKETS,
     DOUBLE_PRIME,
     ELLIPSIS,
     EM_DASH,
@@ -310,91 +309,73 @@ def add_space_after_right_double_quote(text, locale):
     return pattern.sub(r"\1 \2", text)
 
 
-def swap_quotes_and_terminal_punctuation(text, locale):
+def fix_quoted_word_punctuation(text, locale):
     """
-    Swap quotes and terminal punctuation for quoted parts.
+    Fix punctuation placement for single-word quoted content.
 
-    Rule: Terminal punctuation goes inside quotes for full sentences,
-    outside for partial quotes.
+    Single word = no spaces inside quotes (includes contractions, hyphenated words, numbers)
+
+    Rules:
+    - move periods `.`, commas `,`, semicolons `;`, colons `:` outside the quoted word
+    - keep the position of `!`, `?`, and `…` as is (ambiguous context)
 
     Examples:
-        "quoted part." -> "quoted part".  (partial quote)
-        "He was ok". -> "He was ok."  (full sentence at start)
-
-    Exception:
-        Byl to "Karel IV.", ktery - preserves roman numeral
+        "word." -> "word".
+        "it's," -> "it's",
+        "well-known;" -> "well-known";
+        "2020:" -> "2020":
+        "Wow!" -> "Wow!" (unchanged—ambiguous)
     """
     loc = _get_locale(locale)
     left_quote = re.escape(loc.double_quote_open)
     right_quote = re.escape(loc.double_quote_close)
 
-    # Case 1: Quoted part within a sentence - move punctuation outside
-    # Match: not-sentence-punct + space + left-quote + content + not-roman + terminal-punct + right-quote
+    # Match: left-quote + non-space-non-quote + not-roman-not-punct + sentence-punct(1+) + right-quote
+    pattern = re.compile(
+        rf"({left_quote})"
+        rf"([^{SPACES}{right_quote}]+?)"
+        rf"([^{ROMAN_NUMERALS}{SENTENCE_PUNCTUATION}])"
+        rf"([{SENTENCE_PUNCTUATION}]{{1,}})"
+        rf"({right_quote})"
+    )
+
+    def replacer(match):
+        left_q, content, not_roman, punct, right_q = match.groups()
+        # Only move outside if single punct and it's .,;:
+        if len(punct) == 1 and punct in ".,;:":
+            return left_q + content + not_roman + right_q + punct
+        return match.group(0)
+
+    return pattern.sub(replacer, text)
+
+
+def fix_quoted_sentence_punctuation(text, locale):
+    """
+    Fix punctuation placement for quoted sentence or fragment of words.
+
+    Rules:
+    - move periods `.`, commas `,`, ellipses `…`, exclamation `!` and question marks `?` inside the quoted part
+    - move colons `:` and semicolons `;` outside the quoted part
+    """
+    loc = _get_locale(locale)
+    left_quote = re.escape(loc.double_quote_open)
+    right_quote = re.escape(loc.double_quote_close)
+
+    # Step 1: Move everything inside
+    # Match: left-quote + content + space + (not looking ahead at left-quote) + not-roman(2+) + right-quote + sentence-punct
     pattern1 = re.compile(
-        rf"([^{SENTENCE_PUNCTUATION}])"
-        rf"([{SPACES}])"
         rf"({left_quote})"
-        rf"([^{right_quote}]+?)"
-        rf"([^{ROMAN_NUMERALS}{CLOSING_BRACKETS}])"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
+        rf"(.+)"
+        rf"([{SPACES}])(?!{left_quote})"
+        rf"([^{ROMAN_NUMERALS}]{{2,}})"
         rf"({right_quote})"
+        rf"([{SENTENCE_PUNCTUATION}{ELLIPSIS}])"
     )
-    text = pattern1.sub(r"\1\2\3\4\5\7\6", text)
+    text = pattern1.sub(r"\1\2\3\4\6\5", text)
 
-    # Case 2: Quoted sentence within unquoted sentence - move punct inside
-    # Match: not-sentence-punct + space + left-quote + content + not-roman + right-quote + terminal-punct + space + lowercase
-    pattern2 = re.compile(
-        rf"([^{SENTENCE_PUNCTUATION}])"
-        rf"([{SPACES}])"
-        rf"({left_quote})"
-        rf"(.+?)"
-        rf"([^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"([{SPACES}])"
-        rf"([{LOWERCASE_CHARS}])"
-    )
-    text = pattern2.sub(r"\1\2\3\4\5\7\6\8\9", text)
-
-    # Case 3: Whole quoted sentence at start of paragraph - move punct inside
-    # Match: ^left-quote + content + not-roman + right-quote + terminal-punct + non-word-boundary
-    pattern3 = re.compile(
-        rf"(^{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)",
-        re.MULTILINE,
-    )
-    text = pattern3.sub(r"\1\3\2\4", text)
-
-    # Case 4: Whole quoted sentence after a sentence - move punct inside
-    pattern4 = re.compile(
-        rf"([{SENTENCE_PUNCTUATION}]"
-        rf"[{SPACES}]"
-        rf"{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)"
-    )
-    text = pattern4.sub(r"\1\3\2\4", text)
-
-    # Case 5: Whole quoted sentence after another quoted sentence - move punct inside
-    pattern5 = re.compile(
-        rf"([{SENTENCE_PUNCTUATION}]"
-        rf"[{right_quote}]"
-        rf"[{SPACES}]"
-        rf"{left_quote}"
-        rf"[^{right_quote}]+?"
-        rf"[^{ROMAN_NUMERALS}])"
-        rf"({right_quote})"
-        rf"([{TERMINAL_PUNCTUATION}{ELLIPSIS}])"
-        rf"(\B)"
-    )
-    text = pattern5.sub(r"\1\3\2\4", text)
+    # Step 2: Move colons and semicolons outside
+    pattern2 = re.compile(rf"([:;])({right_quote})")
+    text = pattern2.sub(r"\2\1", text)
 
     return text
 
@@ -414,12 +395,14 @@ def fix_direct_speech_intro(text, locale):
     right_quote = re.escape(loc.double_quote_close)
 
     # Direct speech intro character based on locale
+    # directSpeechIntroAdepts is dynamically collected from all locales in JS:
+    # "," from en-us, ":" from others = ",:"
     if loc.locale_id == "en-us":
         direct_speech_intro = ","
-        direct_speech_intro_adepts = r",:;"
+        direct_speech_intro_adepts = r",:"
     else:
         direct_speech_intro = ":"
-        direct_speech_intro_adepts = r",:;"
+        direct_speech_intro_adepts = r",:"
 
     dashes = f"{HYPHEN}{EN_DASH}{EM_DASH}"
 
@@ -490,7 +473,7 @@ def fix_double_quotes_and_primes(text, locale, keep_markdown_code_blocks=False):
     [6] Replace all identified punctuation with locale quotes
     [7] Consolidate spaces around quotes and primes
     [8] Fix direct speech introduction
-    [9] Swap quotes and terminal punctuation
+    [9] Fix punctuation placement for quoted content
 
     Args:
         text: Input text to fix
@@ -535,7 +518,8 @@ def fix_double_quotes_and_primes(text, locale, keep_markdown_code_blocks=False):
     # [8] Fix direct speech introduction
     text = fix_direct_speech_intro(text, loc)
 
-    # [9] Swap quotes and terminal punctuation
-    text = swap_quotes_and_terminal_punctuation(text, loc)
+    # [9] Fix punctuation placement for quoted content
+    text = fix_quoted_word_punctuation(text, loc)
+    text = fix_quoted_sentence_punctuation(text, loc)
 
     return text

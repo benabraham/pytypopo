@@ -54,14 +54,20 @@ LOCALE_CONFIGS = {
         "dash_char": EM_DASH,
         "dash_space_after": "",
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
-        # Using nbsp for consistency across locales (matches test expectations)
-        "space_after_abbreviation": NBSP,
+        # en-us uses no space (empty string) - matches upstream typopo
+        "space_after_abbreviation": "",
+        # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NBSP,
+        "space_after_paragraph_sign": NBSP,
     },
     "de-de": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # German uses „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        "single_quote_close": LEFT_SINGLE_QUOTE,
         "ordinal_indicator": r"\.",
         "roman_ordinal_indicator": r"\.",
         "ordinal_date_first_space": NBSP,
@@ -73,12 +79,18 @@ LOCALE_CONFIGS = {
         "dash_space_after": HAIR_SPACE,
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
+        # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NBSP,
+        "space_after_paragraph_sign": NBSP,
     },
     "cs": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # Czech uses „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        "single_quote_close": LEFT_SINGLE_QUOTE,
         "ordinal_indicator": r"\.",
         "roman_ordinal_indicator": r"\.",
         "ordinal_date_first_space": NBSP,
@@ -90,23 +102,35 @@ LOCALE_CONFIGS = {
         "dash_space_after": SPACE,
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
+        # Symbol spacing - cs uses regular space for copyright symbols
+        "space_after_copyright": SPACE,
+        "space_after_sound_recording_copyright": SPACE,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NBSP,
+        "space_after_paragraph_sign": NBSP,
     },
     "sk": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # Slovak uses „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        "single_quote_close": LEFT_SINGLE_QUOTE,
         "ordinal_indicator": r"\.",
         "roman_ordinal_indicator": r"\.",
         "ordinal_date_first_space": NBSP,
         "ordinal_date_second_space": NBSP,
         "space_before_percent": NBSP,  # sk: nbsp before %
-        # sk uses en dash with nbsp before and space after (same as cs)
-        "dash_space_before": NBSP,
-        "dash_char": EN_DASH,
-        "dash_space_after": SPACE,
+        # sk uses em dash with hair spaces (matches upstream typopo)
+        "dash_space_before": HAIR_SPACE,
+        "dash_char": EM_DASH,
+        "dash_space_after": HAIR_SPACE,
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
+        # Symbol spacing - sk uses narrow nbsp for section/paragraph
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NARROW_NBSP,
+        "space_after_paragraph_sign": NARROW_NBSP,
     },
     "rue": {
         "double_quote_open": LEFT_GUILLEMET,
@@ -124,6 +148,12 @@ LOCALE_CONFIGS = {
         "dash_space_after": HAIR_SPACE,
         # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
         "space_after_abbreviation": NBSP,
+        # Symbol spacing - rue uses narrow nbsp for section/paragraph
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NARROW_NBSP,
+        "space_after_paragraph_sign": NARROW_NBSP,
     },
 }
 
@@ -161,6 +191,11 @@ class Locale:
         self._dash_char = config["dash_char"]
         self._dash_space_after = config["dash_space_after"]
         self._space_after_abbreviation = config["space_after_abbreviation"]
+        self._space_after_copyright = config["space_after_copyright"]
+        self._space_after_sound_recording_copyright = config["space_after_sound_recording_copyright"]
+        self._space_after_numero_sign = config["space_after_numero_sign"]
+        self._space_after_section_sign = config["space_after_section_sign"]
+        self._space_after_paragraph_sign = config["space_after_paragraph_sign"]
 
         # terminal_quotes: combined closing quotes for pattern matching
         self._terminal_quotes = self._double_quote_close + self._single_quote_close
@@ -250,6 +285,31 @@ class Locale:
     def space_after_abbreviation(self):
         """Space character between abbreviated words (e.g., F.{space}X. Salda, e.{space}g.)."""
         return self._space_after_abbreviation
+
+    @property
+    def space_after_copyright(self):
+        """Space character after copyright sign (©)."""
+        return self._space_after_copyright
+
+    @property
+    def space_after_sound_recording_copyright(self):
+        """Space character after sound recording copyright sign (℗)."""
+        return self._space_after_sound_recording_copyright
+
+    @property
+    def space_after_numero_sign(self):
+        """Space character after numero sign (№)."""
+        return self._space_after_numero_sign
+
+    @property
+    def space_after_section_sign(self):
+        """Space character after section sign (§)."""
+        return self._space_after_section_sign
+
+    @property
+    def space_after_paragraph_sign(self):
+        """Space character after paragraph sign (¶)."""
+        return self._space_after_paragraph_sign
 
     def __repr__(self):
         return f"Locale({self._locale_id!r})"

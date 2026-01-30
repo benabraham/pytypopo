@@ -6,6 +6,7 @@ Port of tests/symbols/multiplication-sign.test.js from typopo.
 
 import pytest
 
+from pytypopo.const import NBSP
 from pytypopo.modules.symbols.multiplication_sign import (
     _fix_multiplication_between_numbers,
     _fix_multiplication_between_words,
@@ -18,20 +19,20 @@ from pytypopo.modules.symbols.multiplication_sign import (
 # Format: {input: expected_output}
 BETWEEN_NUMBERS_TESTS = {
     # Basic number × number
-    "5 x 4": "5 × 4",
-    "5 X 4": "5 × 4",
+    "5 x 4": f"5{NBSP}×{NBSP}4",
+    "5 X 4": f"5{NBSP}×{NBSP}4",
     # With inch/foot marks
-    "5″ x 4″": "5″ × 4″",
-    "5′ x 4′": "5′ × 4′",
+    "5″ x 4″": f"5″{NBSP}×{NBSP}4″",
+    "5′ x 4′": f"5′{NBSP}×{NBSP}4′",
     # With units
-    "5 mm x 5 mm": "5 mm × 5 mm",
-    "5 žien X 5 žien": "5 žien × 5 žien",
+    "5 mm x 5 mm": f"5 mm{NBSP}×{NBSP}5 mm",
+    "5 žien X 5 žien": f"5 žien{NBSP}×{NBSP}5 žien",
     # Units attached to numbers
-    "5cm x 5cm": "5cm × 5cm",
+    "5cm x 5cm": f"5cm{NBSP}×{NBSP}5cm",
     # Multiple dimensions
-    "5 x 4 x 3": "5 × 4 × 3",
-    "5″ x 4″ x 3″": "5″ × 4″ × 3″",
-    "5 mm x 5 mm x 5 mm": "5 mm × 5 mm × 5 mm",
+    "5 x 4 x 3": f"5{NBSP}×{NBSP}4{NBSP}×{NBSP}3",
+    "5″ x 4″ x 3″": f"5″{NBSP}×{NBSP}4″{NBSP}×{NBSP}3″",
+    "5 mm x 5 mm x 5 mm": f"5 mm{NBSP}×{NBSP}5 mm{NBSP}×{NBSP}5 mm",
     # False positives - should NOT be replaced
     "4xenographs": "4xenographs",
     "0xd": "0xd",
@@ -42,12 +43,12 @@ BETWEEN_NUMBERS_TESTS = {
 # Format: {input: expected_output}
 BETWEEN_WORDS_TESTS = {
     # Dimension abbreviations
-    "š x v x h": "š × v × h",
-    "mm x mm": "mm × mm",
+    "š x v x h": f"š{NBSP}×{NBSP}v{NBSP}×{NBSP}h",
+    "mm x mm": f"mm{NBSP}×{NBSP}mm",
     # Names (sports matchups, etc.)
-    "Marciano x Clay": "Marciano × Clay",
+    "Marciano x Clay": f"Marciano{NBSP}×{NBSP}Clay",
     # Words with diacritics
-    "žena x žena": "žena × žena",
+    "žena x žena": f"žena{NBSP}×{NBSP}žena",
     # False positives - should NOT be replaced
     "light xenons": "light xenons",
     "František X Šalda": "František X Šalda",
@@ -58,12 +59,12 @@ BETWEEN_WORDS_TESTS = {
 # Format: {input: expected_output}
 NUMBER_AND_WORD_TESTS = {
     # With space
-    "4 x object": "4 × object",
+    "4 x object": f"4{NBSP}×{NBSP}object",
     # Without space before x
-    "4x object": "4× object",
-    "4X object": "4× object",
+    "4x object": f"4×{NBSP}object",
+    "4X object": f"4×{NBSP}object",
     # With diacritics
-    "4X žena": "4× žena",
+    "4X žena": f"4×{NBSP}žena",
     # False positives - should NOT be replaced
     "4 xenographs": "4 xenographs",
     "4xenographs": "4xenographs",
@@ -75,12 +76,12 @@ NUMBER_AND_WORD_TESTS = {
 # Format: {input: expected_output}
 SPACING_TESTS = {
     # Missing spaces should be added
-    "12x3": "12 × 3",
-    "12×3": "12 × 3",
+    "12x3": f"12{NBSP}×{NBSP}3",
+    "12×3": f"12{NBSP}×{NBSP}3",
     # With inch marks
-    "12″×3″": "12″ × 3″",
+    "12″×3″": f"12″{NBSP}×{NBSP}3″",
     # With foot marks
-    "12′×3′": "12′ × 3′",
+    "12′×3′": f"12′{NBSP}×{NBSP}3′",
 }
 
 

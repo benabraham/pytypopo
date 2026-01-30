@@ -49,3 +49,10 @@ Thumbs.db
 
 # Project specific
 *.log
+
+# Cross-test (upstream JS repo cloned at runtime)
+cross-test/typopo/
+cross-test/js-adapter/node_modules/
+
+# Claude Code
+plans/

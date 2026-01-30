@@ -9,6 +9,7 @@ import re
 from pytypopo.const import (
     DOUBLE_PRIME,
     MULTIPLICATION_SIGN,
+    NBSP,
     SINGLE_PRIME,
     SPACES,
 )
@@ -70,7 +71,7 @@ def _fix_multiplication_between_numbers(text):
     prev_text = None
     while prev_text != text:
         prev_text = text
-        text = pattern.sub(rf"\1\2 {MULTIPLICATION_SIGN} \4\5", text)
+        text = pattern.sub(rf"\1\2{NBSP}{MULTIPLICATION_SIGN}{NBSP}\4\5", text)
 
     return text
 
@@ -105,10 +106,11 @@ def _fix_multiplication_between_words(text):
 
         # Check for middle initial pattern: "Name X Surname"
         # Both words start with uppercase and x is uppercase X
-        if word1[0].isupper() and word2[0].isupper() and "X" in x_part and " X " in x_part:
+        # x_part is like " X " with any space type, so just check for uppercase X
+        if word1[0].isupper() and word2[0].isupper() and "X" in x_part:
             return match.group(0)  # Keep original
 
-        return f"{word1} {MULTIPLICATION_SIGN} {word2}"
+        return f"{word1}{NBSP}{MULTIPLICATION_SIGN}{NBSP}{word2}"
 
     # Apply repeatedly until no more matches (for multiple x in sequence)
     prev_text = None
@@ -151,12 +153,12 @@ def _fix_multiplication_number_and_word(text):
         # space_after = match.group(4)  # not used
         word = match.group(5)
 
-        # If there was space before x, output "digit x word"
-        # If no space before x, output "digitx word"
+        # If there was space before x, output "digit × word" with NBSP
+        # If no space before x, output "digit× word" with NBSP after
         if space_before:
-            return f"{digit} {MULTIPLICATION_SIGN} {word}"
+            return f"{digit}{NBSP}{MULTIPLICATION_SIGN}{NBSP}{word}"
         else:
-            return f"{digit}{MULTIPLICATION_SIGN} {word}"
+            return f"{digit}{MULTIPLICATION_SIGN}{NBSP}{word}"
 
     return pattern.sub(replace_num_word, text)
 
@@ -192,7 +194,7 @@ def _fix_multiplication_spacing(text):
         # x_char = match.group(3)  # not used, always replace with multiplication sign
         num2 = match.group(4)
         prime2 = match.group(5) or ""
-        return f"{num1}{prime1} {MULTIPLICATION_SIGN} {num2}{prime2}"
+        return f"{num1}{prime1}{NBSP}{MULTIPLICATION_SIGN}{NBSP}{num2}{prime2}"
 
     return pattern.sub(add_spacing, text)
 

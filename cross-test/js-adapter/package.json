@@ -1,0 +1,13 @@
+{
+  "name": "pytypopo-cross-test",
+  "version": "1.0.0",
+  "description": "Cross-test pytypopo against upstream typopo JS test suite",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

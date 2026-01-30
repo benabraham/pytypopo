@@ -13,9 +13,7 @@ from pytypopo.modules.words.abbreviations import (
     fix_multiple_word_abbreviations,
     fix_single_word_abbreviations,
 )
-
-# NBSP used as abbreviation space (same as NBSP in the JS version)
-ABBR_SPACE = NBSP
+from tests.conftest import transform_test_value
 
 # Test cases for initials (e.g., J. K. Rowling)
 # Initials before names should use nbsp
@@ -38,14 +36,15 @@ INITIALS_TESTS = {
 
 # TODO: These tests match JS behavior but may require implementation improvements
 # Two-letter initials (from JS tests) - currently not fully implemented
+# Uses {abbr_space} token - transformed per locale (empty for en-us, NBSP for others)
 INITIALS_TESTS_ADVANCED = {
-    "F. X. Šalda": f"F.{ABBR_SPACE}X.{NBSP}Šalda",
-    "F.X. Šalda": f"F.{ABBR_SPACE}X.{NBSP}Šalda",
-    "Ch. Ch. Šalda": f"Ch.{ABBR_SPACE}Ch.{NBSP}Šalda",
-    "CH. CH. Šalda": f"CH.{ABBR_SPACE}CH.{NBSP}Šalda",
+    "F. X. Šalda": "F.{abbr_space}X. Šalda",
+    "F.X. Šalda": "F.{abbr_space}X. Šalda",
+    "Ch. Ch. Šalda": "Ch.{abbr_space}Ch. Šalda",
+    "CH. CH. Šalda": "CH.{abbr_space}CH. Šalda",
     # Three-letter initials
-    "Ch. Ch. Ch. Lambert": f"Ch.{ABBR_SPACE}Ch.{ABBR_SPACE}Ch.{NBSP}Lambert",
-    "CH. CH. CH. Lambert": f"CH.{ABBR_SPACE}CH.{ABBR_SPACE}CH.{NBSP}Lambert",
+    "Ch. Ch. Ch. Lambert": "Ch.{abbr_space}Ch.{abbr_space}Ch. Lambert",
+    "CH. CH. CH. Lambert": "CH.{abbr_space}CH.{abbr_space}CH. Lambert",
 }
 
 # Test cases for single-word abbreviations (followed by text/numbers)
@@ -115,50 +114,51 @@ MULTI_WORD_ABBREV_FALSE_POSITIVE_TESTS = {
 
 # TODO: These tests match JS behavior but the implementation may need improvements
 # for full multi-word abbreviation support
+# Uses {abbr_space} token - transformed per locale (empty for en-us, NBSP for others)
 MULTI_WORD_ABBREV_TESTS_ADVANCED = {
     # Double-word abbreviations (from JS)
-    "hl. m. Praha": f"hl.{ABBR_SPACE}m.{NBSP}Praha",  # set proper nbsp
-    "hl.m.Praha": f"hl.{ABBR_SPACE}m.{NBSP}Praha",  # include proper spaces
-    "Hl.m.Praha": f"Hl.{ABBR_SPACE}m.{NBSP}Praha",  # catch capitalized exception
-    "Je to hl. m. Praha.": f"Je to hl.{ABBR_SPACE}m.{NBSP}Praha.",  # in a sentence
-    "Praha, hl. m.": f"Praha, hl.{ABBR_SPACE}m.",  # check for abbr at the end of statement
-    "(hl. m. Praha)": f"(hl.{ABBR_SPACE}m.{NBSP}Praha)",  # bracket variations
-    "(Praha, hl. m.)": f"(Praha, hl.{ABBR_SPACE}m.)",  # bracket variations
-    "(hl. m.)": f"(hl.{ABBR_SPACE}m.)",  # bracket variations
-    "hl. m.": f"hl.{ABBR_SPACE}m.",  # plain abbreviation
+    "hl. m. Praha": "hl.{abbr_space}m. Praha",  # set proper nbsp
+    "hl.m.Praha": "hl.{abbr_space}m. Praha",  # include proper spaces
+    "Hl.m.Praha": "Hl.{abbr_space}m. Praha",  # catch capitalized exception
+    "Je to hl. m. Praha.": "Je to hl.{abbr_space}m. Praha.",  # in a sentence
+    "Praha, hl. m.": "Praha, hl.{abbr_space}m.",  # check for abbr at the end of statement
+    "(hl. m. Praha)": "(hl.{abbr_space}m. Praha)",  # bracket variations
+    "(Praha, hl. m.)": "(Praha, hl.{abbr_space}m.)",  # bracket variations
+    "(hl. m.)": "(hl.{abbr_space}m.)",  # bracket variations
+    "hl. m.": "hl.{abbr_space}m.",  # plain abbreviation
     # Triple word abbreviations (from JS)
-    "im Jahr 200 v. u. Z. als der Hunger": f"im Jahr 200 v.{ABBR_SPACE}u.{ABBR_SPACE}Z.{NBSP}als der Hunger",
-    "im Jahr 200 v.u.Z. als der Hunger": f"im Jahr 200 v.{ABBR_SPACE}u.{ABBR_SPACE}Z.{NBSP}als der Hunger",
-    "im Jahr 200 v. u. Z.": f"im Jahr 200 v.{ABBR_SPACE}u.{ABBR_SPACE}Z.",
-    "im Jahr 200 v.u.Z.": f"im Jahr 200 v.{ABBR_SPACE}u.{ABBR_SPACE}Z.",
-    "v. u. Z.": f"v.{ABBR_SPACE}u.{ABBR_SPACE}Z.",
-    "v.u.Z.": f"v.{ABBR_SPACE}u.{ABBR_SPACE}Z.",
+    "im Jahr 200 v. u. Z. als der Hunger": "im Jahr 200 v.{abbr_space}u.{abbr_space}Z. als der Hunger",
+    "im Jahr 200 v.u.Z. als der Hunger": "im Jahr 200 v.{abbr_space}u.{abbr_space}Z. als der Hunger",
+    "im Jahr 200 v. u. Z.": "im Jahr 200 v.{abbr_space}u.{abbr_space}Z.",
+    "im Jahr 200 v.u.Z.": "im Jahr 200 v.{abbr_space}u.{abbr_space}Z.",
+    "v. u. Z.": "v.{abbr_space}u.{abbr_space}Z.",
+    "v.u.Z.": "v.{abbr_space}u.{abbr_space}Z.",
     # Random abbreviations from JS tests
-    "1000 pr. n. l.": f"1000 pr.{ABBR_SPACE}n.{ABBR_SPACE}l.",
-    "im Jahr 200 v. Chr.": f"im Jahr 200 v.{ABBR_SPACE}Chr.",
-    "Das Tier, d. h. der Fisch, lebte noch lange.": f"Das Tier, d.{ABBR_SPACE}h.{NBSP}der Fisch, lebte noch lange.",
-    "Das Tier (d. h. der Fisch) lebte noch lange.": f"Das Tier (d.{ABBR_SPACE}h.{NBSP}der Fisch) lebte noch lange.",
-    "т. зн. незвыкле": f"т.{ABBR_SPACE}зн.{NBSP}незвыкле",
+    "1000 pr. n. l.": "1000 pr.{abbr_space}n.{abbr_space}l.",
+    "im Jahr 200 v. Chr.": "im Jahr 200 v.{abbr_space}Chr.",
+    "Das Tier, d. h. der Fisch, lebte noch lange.": "Das Tier, d.{abbr_space}h. der Fisch, lebte noch lange.",
+    "Das Tier (d. h. der Fisch) lebte noch lange.": "Das Tier (d.{abbr_space}h. der Fisch) lebte noch lange.",
+    "т. зн. незвыкле": "т.{abbr_space}зн. незвыкле",
     # U.S. abbreviation
-    "the U.S.": f"the U.{ABBR_SPACE}S.",
-    "the U. S.": f"the U.{ABBR_SPACE}S.",
+    "the U.S.": "the U.{abbr_space}S.",
+    "the U. S.": "the U.{abbr_space}S.",
     # e.g. variations (from JS)
-    ", e.g. something": f", e.{ABBR_SPACE}g.{NBSP}something",
-    "(e.g. something": f"(e.{ABBR_SPACE}g.{NBSP}something",
-    "a e.g. something": f"a e.{ABBR_SPACE}g.{NBSP}something",
-    "e.g. 100 km": f"e.{ABBR_SPACE}g.{NBSP}100 km",
-    "(e.g.)": f"(e.{ABBR_SPACE}g.)",
-    "(e.g. )": f"(e.{ABBR_SPACE}g.)",
-    "e. g.": f"e.{ABBR_SPACE}g.",
+    ", e.g. something": ", e.{abbr_space}g. something",
+    "(e.g. something": "(e.{abbr_space}g. something",
+    "a e.g. something": "a e.{abbr_space}g. something",
+    "e.g. 100 km": "e.{abbr_space}g. 100 km",
+    "(e.g.)": "(e.{abbr_space}g.)",
+    "(e.g. )": "(e.{abbr_space}g.)",
+    "e. g.": "e.{abbr_space}g.",
     # i.e. variations (from JS)
-    "a i.e. something": f"a i.{ABBR_SPACE}e.{NBSP}something",
-    "i.e. 100 km": f"i.{ABBR_SPACE}e.{NBSP}100 km",
-    "(i.e.)": f"(i.{ABBR_SPACE}e.)",
+    "a i.e. something": "a i.{abbr_space}e. something",
+    "i.e. 100 km": "i.{abbr_space}e. 100 km",
+    "(i.e.)": "(i.{abbr_space}e.)",
     # a.m. / p.m. (from JS)
-    "4.20 p.m.": f"4.20 p.{ABBR_SPACE}m.",
-    "4.20 p.m. in the afternoon": f"4.20 p.{ABBR_SPACE}m.{NBSP}in the afternoon",
-    "We will continue tomorrow at 8:00 a.m.!": f"We will continue tomorrow at 8:00 a.{ABBR_SPACE}m.!",
-    "8 a.m. is the right time": f"8 a.{ABBR_SPACE}m.{NBSP}is the right time",
+    "4.20 p.m.": "4.20 p.{abbr_space}m.",
+    "4.20 p.m. in the afternoon": "4.20 p.{abbr_space}m. in the afternoon",
+    "We will continue tomorrow at 8:00 a.m.!": "We will continue tomorrow at 8:00 a.{abbr_space}m.!",
+    "8 a.m. is the right time": "8 a.{abbr_space}m. is the right time",
 }
 
 
@@ -261,7 +261,8 @@ class TestFixInitialsAdvanced:
     def test_fix_initials_advanced(self, input_text, expected, locale):
         """Multiple initials before names should have proper nbsp spacing."""
         result = fix_initials(input_text, locale)
-        assert result == expected
+        expected_transformed = transform_test_value(expected, locale)
+        assert result == expected_transformed
 
 
 class TestFixSingleWordAbbreviationsFalsePositives:
@@ -281,7 +282,8 @@ class TestFixMultipleWordAbbreviationsAdvanced:
     def test_fix_multiple_word_abbreviations_advanced(self, input_text, expected, locale):
         """Multi-word abbreviations should be properly normalized."""
         result = fix_multiple_word_abbreviations(input_text, locale)
-        assert result == expected
+        expected_transformed = transform_test_value(expected, locale)
+        assert result == expected_transformed
 
 
 class TestFixMultipleWordAbbreviationsFalsePositives:

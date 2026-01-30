@@ -7,6 +7,8 @@ Port of src/lib/symbols/copyrights.js from typopo.
 import re
 
 from pytypopo.const import COPYRIGHT, SOUND_RECORDING_COPYRIGHT, SPACES
+from pytypopo.locale.base import get_locale
+from pytypopo.modules.symbols.section_sign import fix_spacing_around_symbol
 
 
 def _replace_copyright(text, letter, symbol):
@@ -38,17 +40,22 @@ def fix_copyrights(text, locale):
     - (c) and (C) -> (C) (copyright)
     - (p) and (P) -> (P) (sound recording copyright)
 
+    Also fixes spacing around these symbols using locale-specific spacing.
+
     Args:
         text: Input text to fix
-        locale: Language locale (unused, symbols are universal)
+        locale: Language locale string or Locale instance (determines spacing after symbol)
 
     Returns:
         Text with copyright symbols fixed
     """
-    # Fix copyright symbol (c) -> (C)
+    loc = get_locale(locale)
+    # Fix copyright symbol (c) -> (C) and spacing
     text = _replace_copyright(text, "c", COPYRIGHT)
+    text = fix_spacing_around_symbol(text, COPYRIGHT, loc.space_after_copyright)
 
-    # Fix sound recording copyright (p) -> (P)
+    # Fix sound recording copyright (p) -> (P) and spacing
     text = _replace_copyright(text, "p", SOUND_RECORDING_COPYRIGHT)
+    text = fix_spacing_around_symbol(text, SOUND_RECORDING_COPYRIGHT, loc.space_after_sound_recording_copyright)
 
     return text

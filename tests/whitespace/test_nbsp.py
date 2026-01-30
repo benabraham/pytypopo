@@ -516,3 +516,36 @@ class TestFixNbsp:
         locale = Locale("cs")
         result = fix_nbsp(text, locale)
         assert result == f"5{NBSP}mm"
+
+
+# -------------------------------------------------------------------
+# Ordinal date vs version number false positives
+# -------------------------------------------------------------------
+class TestOrdinalDateVersionFalsePositive:
+    """Version numbers should not be treated as ordinal dates."""
+
+    @pytest.mark.parametrize("locale", ["cs", "sk", "de-de", "en-us", "rue"])
+    def test_version_numbers_unchanged(self, locale):
+        """Version numbers like 3.0.0 should not be modified."""
+        from pytypopo import fix_typos
+
+        # Version numbers - should NOT be changed
+        assert fix_typos("3.0.0", locale) == "3.0.0"
+        assert fix_typos("1.2.3", locale) == "1.2.3"
+        assert fix_typos("10.0.1", locale) == "10.0.1"
+
+    @pytest.mark.parametrize("locale", ["cs", "sk", "de-de"])
+    def test_ordinal_dates_get_spaces(self, locale):
+        """Valid ordinal dates should get proper spacing."""
+        from pytypopo import fix_typos
+
+        locale_obj = Locale(locale)
+        first_sp = locale_obj.ordinal_date_first_space
+        second_sp = locale_obj.ordinal_date_second_space
+
+        # Valid dates - should add spacing
+        result = fix_typos("12.12.2017", locale)
+        assert result == f"12.{first_sp}12.{second_sp}2017"
+
+        result = fix_typos("1.1.2020", locale)
+        assert result == f"1.{first_sp}1.{second_sp}2020"

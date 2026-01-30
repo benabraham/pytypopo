@@ -36,21 +36,24 @@ EXPECTED_QUOTES = {
     },
     "de-de": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # German/Czech/Slovak use „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        # de-de uses LEFT_SINGLE_QUOTE for closing (matches JS typopo)
+        "single_quote_close": LEFT_SINGLE_QUOTE,
     },
     "cs": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # German/Czech/Slovak use „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        # cs uses LEFT_SINGLE_QUOTE for closing (matches JS typopo)
+        "single_quote_close": LEFT_SINGLE_QUOTE,
     },
     "sk": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
-        "double_quote_close": RIGHT_DOUBLE_QUOTE,
+        "double_quote_close": LEFT_DOUBLE_QUOTE,  # German/Czech/Slovak use „…" style
         "single_quote_open": SINGLE_LOW_9_QUOTE,
-        "single_quote_close": RIGHT_SINGLE_QUOTE,
+        # sk uses LEFT_SINGLE_QUOTE for closing (matches JS typopo)
+        "single_quote_close": LEFT_SINGLE_QUOTE,
     },
     "rue": {
         "double_quote_open": LEFT_GUILLEMET,
@@ -158,17 +161,17 @@ class TestQuoteCharacters:
             ("en-us", "single_quote_open", LEFT_SINGLE_QUOTE),
             ("en-us", "single_quote_close", RIGHT_SINGLE_QUOTE),
             ("de-de", "double_quote_open", DOUBLE_LOW_9_QUOTE),
-            ("de-de", "double_quote_close", RIGHT_DOUBLE_QUOTE),
+            ("de-de", "double_quote_close", LEFT_DOUBLE_QUOTE),  # „…" style
             ("de-de", "single_quote_open", SINGLE_LOW_9_QUOTE),
-            ("de-de", "single_quote_close", RIGHT_SINGLE_QUOTE),
+            ("de-de", "single_quote_close", LEFT_SINGLE_QUOTE),  # matches JS typopo
             ("cs", "double_quote_open", DOUBLE_LOW_9_QUOTE),
-            ("cs", "double_quote_close", RIGHT_DOUBLE_QUOTE),
+            ("cs", "double_quote_close", LEFT_DOUBLE_QUOTE),  # „…" style
             ("cs", "single_quote_open", SINGLE_LOW_9_QUOTE),
-            ("cs", "single_quote_close", RIGHT_SINGLE_QUOTE),
+            ("cs", "single_quote_close", LEFT_SINGLE_QUOTE),  # matches JS typopo
             ("sk", "double_quote_open", DOUBLE_LOW_9_QUOTE),
-            ("sk", "double_quote_close", RIGHT_DOUBLE_QUOTE),
+            ("sk", "double_quote_close", LEFT_DOUBLE_QUOTE),  # „…" style
             ("sk", "single_quote_open", SINGLE_LOW_9_QUOTE),
-            ("sk", "single_quote_close", RIGHT_SINGLE_QUOTE),
+            ("sk", "single_quote_close", LEFT_SINGLE_QUOTE),  # matches JS typopo
             ("rue", "double_quote_open", LEFT_GUILLEMET),
             ("rue", "double_quote_close", RIGHT_GUILLEMET),
             ("rue", "single_quote_open", LEFT_SINGLE_GUILLEMET),
@@ -219,9 +222,10 @@ class TestGermanLocale:
     def test_de_de_uses_high_closing_quotes(self):
         """German uses high (top) closing quotes."""
         locale = get_locale("de-de")
-        # Closing quotes should be high (same as English closing)
-        assert locale.double_quote_close == RIGHT_DOUBLE_QUOTE
-        assert locale.single_quote_close == RIGHT_SINGLE_QUOTE
+        # Double closing quotes use LEFT_DOUBLE_QUOTE for „…" style (matches JS typopo)
+        assert locale.double_quote_close == LEFT_DOUBLE_QUOTE
+        # Single closing uses LEFT_SINGLE_QUOTE (matches JS typopo)
+        assert locale.single_quote_close == LEFT_SINGLE_QUOTE
 
 
 class TestCzechSlovakLocales:
