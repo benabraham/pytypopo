@@ -220,18 +220,10 @@ def fix_multiplication_sign(text, locale):
     Returns:
         Text with multiplication signs fixed
     """
-    # Order matters: fix spacing first to normalize, then fix symbols
-
-    # Fix tight number x number patterns (add spacing)
-    text = _fix_multiplication_spacing(text)
-
-    # Fix x between numbers with units
+    # Order matches JS v3.0.0: fix symbols first, then normalize spacing
     text = _fix_multiplication_between_numbers(text)
-
-    # Fix x between words
     text = _fix_multiplication_between_words(text)
-
-    # Fix x between number and word
     text = _fix_multiplication_number_and_word(text)
+    text = _fix_multiplication_spacing(text)
 
     return text

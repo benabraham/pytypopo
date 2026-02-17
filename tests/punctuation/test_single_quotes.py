@@ -1567,18 +1567,6 @@ class TestFixSingleQuotesPrimesAndApostrophes:
         assert result == f"12{SINGLE_PRIME} 45\u2033"
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_preserve_markdown_code(self, locale_id):
-        text = "```\ncode\n```"
-        result = fix_single_quotes_primes_and_apostrophes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_inline_code(self, locale_id):
-        text = "`code`"
-        result = fix_single_quotes_primes_and_apostrophes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_complex_text(self, locale_id):
         text = "I'm listening to rock 'n' roll in the '70s"
         result = fix_single_quotes_primes_and_apostrophes(text, locale_id)

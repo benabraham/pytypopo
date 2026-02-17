@@ -121,11 +121,3 @@ class TestIdempotency:
         first_pass = fix_typos(text, locale, remove_lines=False)
         second_pass = fix_typos(first_pass, locale, remove_lines=False)
         assert second_pass == first_pass
-
-    @pytest.mark.parametrize("locale", ALL_LOCALES)
-    @pytest.mark.parametrize("text", IDEMPOTENCY_TEST_CASES)
-    def test_idempotency_no_markdown(self, text, locale):
-        """Idempotency with keep_markdown_code_blocks=False."""
-        first_pass = fix_typos(text, locale, keep_markdown_code_blocks=False)
-        second_pass = fix_typos(first_pass, locale, keep_markdown_code_blocks=False)
-        assert second_pass == first_pass

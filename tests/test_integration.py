@@ -66,17 +66,6 @@ KEEP_LINES_TESTS = {
 }
 
 
-# Tests for markdown code block protection
-MARKDOWN_CODE_BLOCKS_TESTS = {
-    # Inline code should be protected
-    '`code with "quotes"`': '`code with "quotes"`',
-    "``code with `backtick` inside``": "``code with `backtick` inside``",
-    # Fenced code blocks should be protected
-    '```\ncode with "quotes"\n```': '```\ncode with "quotes"\n```',
-    '```python\nprint("hello")\n```': '```python\nprint("hello")\n```',
-}
-
-
 # Tests for basic typography fixes
 BASIC_TYPOGRAPHY_TESTS = {
     # Multiple spaces
@@ -157,16 +146,6 @@ class TestConfiguration:
         assert result == expected
 
 
-class TestMarkdownCodeBlocks:
-    """Test markdown code block protection."""
-
-    @pytest.mark.parametrize(("input_text", "expected"), MARKDOWN_CODE_BLOCKS_TESTS.items())
-    @pytest.mark.parametrize("locale", ALL_LOCALES)
-    def test_markdown_code_blocks_protected(self, input_text, expected, locale):
-        result = fix_typos(input_text, locale, keep_markdown_code_blocks=True)
-        assert result == expected
-
-
 class TestBasicTypography:
     """Test basic typography fixes."""
 
@@ -210,10 +189,12 @@ class TestApiDefaults:
         result = fix_typos("First.\n\n\nSecond.")
         assert result == "First.\nSecond."
 
-    def test_default_keep_markdown_code_blocks(self):
-        """Default should protect markdown code blocks."""
+    def test_backticks_treated_as_regular_chars(self):
+        """Backticks are treated as regular characters (no markdown protection)."""
+        # Backticks are no longer protected - they get processed as regular text
         result = fix_typos('`code with "quotes"`')
-        assert result == '`code with "quotes"`'
+        # The quotes inside backticks will be processed now
+        assert result == "\u2019code with \u201cquotes\u201d\u2019"
 
 
 class TestEmptyInput:

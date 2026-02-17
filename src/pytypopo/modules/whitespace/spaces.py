@@ -38,46 +38,20 @@ def remove_multiple_spaces(text, locale):
     return pattern.sub(r"\1 \2", text)
 
 
-def remove_spaces_at_paragraph_beginning(text, locale, config=None):
+def remove_spaces_at_paragraph_beginning(text, locale):
     """
     Remove extra spaces and tabs at the beginning of each paragraph.
-
-    Unless configured to keep spaces before markdown lists.
 
     Args:
         text: Input text to fix
         locale: Language locale (unused)
-        config: Configuration dict with 'remove_whitespaces_before_markdown_list' key
 
     Returns:
         Text with leading whitespace removed
     """
-    if config is None:
-        config = {"remove_whitespaces_before_markdown_list": True}
-
-    remove_md_whitespace = config.get("remove_whitespaces_before_markdown_list", True)
-
-    # Split into lines and process each
     lines = text.split("\n")
-
-    # Pattern to identify whitespace and markdown list indicators
-    pattern = re.compile(r"^(\s+)([-*+>]*)")
-
-    result_lines = []
-    for line in lines:
-
-        def replacer(match):
-            whitespace = match.group(1)
-            md_indicator = match.group(2)
-
-            # If configured to keep markdown indentation and there's a markdown indicator
-            if not remove_md_whitespace and md_indicator:
-                return whitespace + md_indicator
-            # Otherwise, just return the markdown indicator (removing whitespace)
-            return md_indicator
-
-        result_lines.append(pattern.sub(replacer, line))
-
+    pattern = re.compile(r"^\s+")
+    result_lines = [pattern.sub("", line) for line in lines]
     return "\n".join(result_lines)
 
 
@@ -280,21 +254,17 @@ def add_space_before_symbol(text, symbol, locale):
     return pattern.sub(rf"\1{SPACE}\2", text)
 
 
-def fix_spaces(text, locale, config=None):
+def fix_spaces(text, locale):
     """
     Apply all space fixes to text.
 
     Args:
         text: Input text to fix
         locale: Locale instance or locale string
-        config: Configuration dict
 
     Returns:
         Text with all space issues fixed
     """
-    if config is None:
-        config = {"remove_whitespaces_before_markdown_list": True}
-
     # Import here to avoid circular imports
     from pytypopo.locale import Locale
 
@@ -303,7 +273,7 @@ def fix_spaces(text, locale, config=None):
         locale = Locale(locale)
 
     text = remove_multiple_spaces(text, locale)
-    text = remove_spaces_at_paragraph_beginning(text, locale, config)
+    text = remove_spaces_at_paragraph_beginning(text, locale)
     text = remove_spaces_at_paragraph_end(text, locale)
     text = remove_space_before_sentence_pause_punctuation(text, locale)
     text = remove_space_before_terminal_punctuation(text, locale)

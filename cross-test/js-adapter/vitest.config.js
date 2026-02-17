@@ -6,11 +6,12 @@ export default defineConfig({
     // Include upstream tests
     include: ['../typopo/tests/**/*.test.js'],
 
-    // Exclude tests that require jsdom (test JS build artifacts, not relevant for Python)
+    // Exclude tests that require jsdom or are debug/not relevant for Python
     exclude: [
       '../typopo/tests/idempotency.test.js',
       '../typopo/tests/integration/typopo.test.js',
       '../typopo/tests/performance.test.js',
+      '../typopo/tests/debug/**',
     ],
 
     // Increase timeout for HTTP calls

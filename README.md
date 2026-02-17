@@ -56,7 +56,6 @@ text = fix_typos(
     text,
     locale='en-us',
     remove_lines=True,           # Remove excessive empty lines
-    keep_markdown_code_blocks=True  # Protect code blocks from changes
 )
 ```
 
@@ -68,7 +67,6 @@ def fix_typos(
     locale: str = 'en-us',
     *,
     remove_lines: bool = True,
-    keep_markdown_code_blocks: bool = True
 ) -> str:
     """
     Fix typography issues in text.
@@ -77,7 +75,6 @@ def fix_typos(
         text: Input text to fix
         locale: Language locale (en-us, de-de, cs, sk, rue)
         remove_lines: Remove excessive empty lines
-        keep_markdown_code_blocks: Protect markdown code blocks from changes
 
     Returns:
         Text with typography fixes applied
@@ -116,7 +113,7 @@ The format is: `MAJOR.MINOR.PATCH+pyN`
 
 Where:
 
-- `2.8.2` matches the upstream version for compatibility reference
+- `3.0.0` matches the upstream version for compatibility reference
 - `+py1` is the local Python port patch/revision number
 - The local suffix never implies changes to the upstream version itself
 

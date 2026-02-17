@@ -29,7 +29,6 @@ from pytypopo.const import (
     TERMINAL_PUNCTUATION,
 )
 from pytypopo.locale import Locale
-from pytypopo.utils.markdown import identify_markdown_code_ticks, place_markdown_code_ticks
 
 # Single quote adepts - various characters that might represent single quotes/apostrophes
 # Includes: ' (straight), ' ' (curly), ‚ (low-9), ‹ › (single guillemets),
@@ -503,13 +502,10 @@ def place_locale_single_quotes(text, locale):
     text = text.replace("{{typopo__lsq}}", loc.single_quote_open)
     text = text.replace("{{typopo__rsq}}", loc.single_quote_close)
 
-    # Replace markdown syntax highlight placeholder (if present)
-    text = text.replace("{{typopo__markdown_syntax_highlight}}", "```")
-
     return text
 
 
-def fix_single_quotes_primes_and_apostrophes(text, locale, keep_markdown_code_blocks=True):
+def fix_single_quotes_primes_and_apostrophes(text, locale):
     """
     Correct improper use of single quotes, single primes and apostrophes.
 
@@ -520,7 +516,6 @@ def fix_single_quotes_primes_and_apostrophes(text, locale, keep_markdown_code_bl
     e.g. 'word or sentence portion' (and not like ' word ')
 
     Algorithm:
-    [0] Identify markdown code ticks
     [1] Identify common apostrophe contractions
     [2] Identify feet, arcminutes, minutes
     [3] Identify single quote pair around a single word
@@ -534,15 +529,11 @@ def fix_single_quotes_primes_and_apostrophes(text, locale, keep_markdown_code_bl
     Args:
         text: Input text to fix
         locale: Locale identifier or Locale instance
-        keep_markdown_code_blocks: If True, preserve markdown backticks
 
     Returns:
         Text with proper single quotes, primes and apostrophes
     """
     loc = _get_locale(locale)
-
-    # [0] Identify markdown code ticks
-    text, markdown_blocks = identify_markdown_code_ticks(text, keep_markdown_code_blocks)
 
     # [1] Identify common apostrophe contractions
     text = identify_contracted_and(text, loc)
@@ -568,7 +559,6 @@ def fix_single_quotes_primes_and_apostrophes(text, locale, keep_markdown_code_bl
 
     # [7] Replace all identified punctuation with appropriate punctuation
     text = place_locale_single_quotes(text, loc)
-    text = place_markdown_code_ticks(text, markdown_blocks, keep_markdown_code_blocks)
 
     # [8] Swap quotes and terminal punctuation
     text = swap_single_quotes_and_terminal_punctuation(text, loc)

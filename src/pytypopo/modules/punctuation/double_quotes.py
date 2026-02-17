@@ -30,7 +30,6 @@ from pytypopo.const import (
 )
 from pytypopo.locale import Locale
 from pytypopo.modules.whitespace.nbsp import add_nbsp_after_preposition
-from pytypopo.utils.markdown import identify_markdown_code_ticks, place_markdown_code_ticks
 
 # Quote adepts - various characters that might represent double quotes
 # JS pattern: „|"|"|\"|«|»|″|,{2,}|‚{2,}|['''‹›′´`]{2,}
@@ -123,12 +122,15 @@ def identify_double_primes(text, locale):
     text = pattern1.sub(r"\1\2\3\4\6\5", text)
 
     # [2] Identify inches following a number (1-3 digits + optional space + quote adept)
+    # The trailing group ensures we don't match opening quotes before words
+    # (e.g. 'Level 3 "with"' — the " before "with" is a quote, not inches)
     pattern2 = re.compile(
         rf"(\b\d{{1,3}})"
         rf"([{SPACES}]?)"
         rf"({DOUBLE_QUOTE_ADEPTS})"
+        rf"([^{ALL_CHARS}]|\B)"
     )
-    text = pattern2.sub(r"\1\2{{typopo__double-prime}}", text)
+    text = pattern2.sub(r"\1\2{{typopo__double-prime}}\4", text)
 
     return text
 
@@ -459,12 +461,11 @@ def fix_direct_speech_intro(text, locale):
     return text
 
 
-def fix_double_quotes_and_primes(text, locale, keep_markdown_code_blocks=False):
+def fix_double_quotes_and_primes(text, locale):
     """
     Correct improper use of double quotes and double primes.
 
     Algorithm:
-    [0] Identify markdown code ticks
     [1] Remove extra terminal punctuation around double quotes
     [2] Identify inches, arcseconds, seconds
     [3] Identify double quote pairs
@@ -478,15 +479,11 @@ def fix_double_quotes_and_primes(text, locale, keep_markdown_code_blocks=False):
     Args:
         text: Input text to fix
         locale: Locale identifier or Locale instance
-        keep_markdown_code_blocks: If True, preserve markdown backticks
 
     Returns:
         Text with proper double quotes and primes
     """
     loc = _get_locale(locale)
-
-    # [0] Identify markdown code ticks
-    text, markdown_blocks = identify_markdown_code_ticks(text, keep_markdown_code_blocks)
 
     # [1] Remove extra terminal punctuation around double quotes
     text = remove_extra_punctuation_before_quotes(text, loc)
@@ -508,7 +505,6 @@ def fix_double_quotes_and_primes(text, locale, keep_markdown_code_blocks=False):
 
     # [6] Replace all identified punctuation with locale quotes
     text = place_locale_double_quotes(text, loc)
-    text = place_markdown_code_ticks(text, markdown_blocks, keep_markdown_code_blocks)
 
     # [7] Consolidate spaces around quotes and primes
     text = remove_extra_spaces_around_quotes(text, loc)

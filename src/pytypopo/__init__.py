@@ -4,7 +4,7 @@ pytypopo - Multilingual typography fixer
 Python port of typopo (https://github.com/surfinzap/typopo/)
 """
 
-__version__ = "2.9.1+py0"
+__version__ = "3.0.0+py0"
 
 from pytypopo.locale import get_locale
 from pytypopo.modules.punctuation import (
@@ -32,10 +32,6 @@ from pytypopo.modules.words import (
     fix_pub_id,
     place_exceptions,
 )
-from pytypopo.utils.markdown import (
-    identify_markdown_code_ticks,
-    place_markdown_code_ticks,
-)
 
 
 def fix_typos(
@@ -43,7 +39,6 @@ def fix_typos(
     locale="en-us",
     *,
     remove_lines=True,
-    keep_markdown_code_blocks=True,
 ):
     """
     Fix typography issues in text.
@@ -57,7 +52,6 @@ def fix_typos(
 
     The function protects certain patterns from modification:
     - URLs, email addresses, and filenames
-    - Markdown code blocks (when keep_markdown_code_blocks=True)
 
     Args:
         text: Input text to fix
@@ -69,8 +63,6 @@ def fix_typos(
             - 'rue' (Rusyn)
         remove_lines: If True (default), collapse multiple empty lines
             into single newlines. Set to False to preserve line spacing.
-        keep_markdown_code_blocks: If True (default), protect markdown
-            code blocks (``` and `) from typography modifications.
 
     Returns:
         Text with typography fixes applied.
@@ -92,41 +84,32 @@ def fix_typos(
     # Get locale configuration
     loc = get_locale(locale)
 
-    # Build configuration for modules that need it
-    config = {
-        "remove_whitespaces_before_markdown_list": True,
-    }
-
-    # Step 1: Protect markdown code blocks (before any processing)
-    # Returns tuple of (processed_text, code_blocks_list)
-    text, markdown_code_blocks = identify_markdown_code_ticks(text, keep_markdown_code_blocks)
-
-    # Step 2: Exclude exceptions (URLs, emails, filenames)
+    # Step 1: Exclude exceptions (URLs, emails, filenames)
     # These are replaced with placeholders to protect from modification
     exception_result = exclude_exceptions(text)
     text = exception_result["processed_text"]
     exceptions = exception_result["exceptions"]
 
-    # Step 3: Remove empty lines (optional)
+    # Step 2: Remove empty lines (optional)
     # Must run early to avoid interfering with other patterns
     if remove_lines:
         text = fix_lines(text, loc)
 
-    # Step 4: Fix ellipsis
+    # Step 3: Fix ellipsis
     # Must run before space cleanup due to variable spacing in source
     text = fix_ellipsis(text, loc)
 
-    # Step 5: Fix general whitespace (spaces, leading/trailing)
-    text = fix_spaces(text, loc, config)
+    # Step 4: Fix general whitespace (spaces, leading/trailing)
+    text = fix_spaces(text, loc)
 
-    # Step 6: Fix punctuation
+    # Step 5: Fix punctuation
     # Order: periods, dashes, double quotes, single quotes
     text = fix_period(text, loc)
     text = fix_dash(text, loc)
     text = fix_double_quotes(text, loc)
     text = fix_single_quotes(text, loc)
 
-    # Step 7: Fix symbols
+    # Step 6: Fix symbols
     # Order follows typopo.js: multiplication, section, copyrights,
     # numero, plus-minus, marks, exponents, number sign
     text = fix_multiplication_sign(text, loc)
@@ -138,21 +121,18 @@ def fix_typos(
     text = fix_exponents(text, loc)
     text = fix_number_sign(text, loc)
 
-    # Step 8: Fix words
+    # Step 7: Fix words
     # Order: case, pub_id, abbreviations
     # Note: fix_case and fix_pub_id are locale-independent
     text = fix_case(text)
     text = fix_pub_id(text)
     text = fix_abbreviations(text, loc)
 
-    # Step 9: Apply non-breaking space rules (locale-specific)
+    # Step 8: Apply non-breaking space rules (locale-specific)
     text = fix_nbsp(text, loc)
 
-    # Step 10: Restore exceptions (URLs, emails, filenames)
+    # Step 9: Restore exceptions (URLs, emails, filenames)
     text = place_exceptions(text, exceptions)
-
-    # Step 11: Restore markdown code blocks
-    text = place_markdown_code_ticks(text, markdown_code_blocks, keep_markdown_code_blocks)
 
     return text
 

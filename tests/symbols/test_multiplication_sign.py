@@ -69,6 +69,8 @@ NUMBER_AND_WORD_TESTS = {
     "4 xenographs": "4 xenographs",
     "4xenographs": "4xenographs",
     "0xd": "0xd",
+    # Pipe character is not multiplication
+    "4 | object": "4 | object",
 }
 
 

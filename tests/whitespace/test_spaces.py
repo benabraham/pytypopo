@@ -87,21 +87,6 @@ REMOVE_SPACES_BEFORE_MARKDOWN_LIST_TESTS = {
     "\t\t> list": "> list",
 }
 
-KEEP_SPACES_BEFORE_MARKDOWN_LIST_TESTS = {
-    " - list": " - list",
-    "   - list": "   - list",
-    "\t- list": "\t- list",
-    "\t\t- list": "\t\t- list",
-    " * list": " * list",
-    "   * list": "   * list",
-    "\t\t* list": "\t\t* list",
-    "\t* list": "\t* list",
-    " > list": " > list",
-    "   > list": "   > list",
-    "\t\t> list": "\t\t> list",
-    "\t> list": "\t> list",
-}
-
 
 class TestRemoveSpacesAtParagraphBeginning:
     """Tests for removing leading whitespace from paragraphs."""
@@ -110,20 +95,9 @@ class TestRemoveSpacesAtParagraphBeginning:
         ("input_text", "expected"),
         {**REMOVE_SPACES_BEFORE_TEXT_TESTS, **REMOVE_SPACES_BEFORE_MARKDOWN_LIST_TESTS}.items(),
     )
-    def test_remove_spaces_default(self, input_text, expected, locale):
-        """Leading spaces should be removed by default."""
-        config = {"remove_whitespaces_before_markdown_list": True}
-        result = remove_spaces_at_paragraph_beginning(input_text, locale, config)
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        ("input_text", "expected"),
-        {**REMOVE_SPACES_BEFORE_TEXT_TESTS, **KEEP_SPACES_BEFORE_MARKDOWN_LIST_TESTS}.items(),
-    )
-    def test_keep_markdown_list_indentation(self, input_text, expected, locale):
-        """When configured, preserve markdown list indentation."""
-        config = {"remove_whitespaces_before_markdown_list": False}
-        result = remove_spaces_at_paragraph_beginning(input_text, locale, config)
+    def test_remove_spaces(self, input_text, expected, locale):
+        """Leading spaces should always be removed."""
+        result = remove_spaces_at_paragraph_beginning(input_text, locale)
         assert result == expected
 
 
@@ -460,6 +434,5 @@ class TestFixSpaces:
     @pytest.mark.parametrize(("input_text", "expected"), FIX_SPACES_TESTS.items())
     def test_fix_spaces(self, input_text, expected, locale):
         """Full fix_spaces should handle all space issues."""
-        config = {"remove_whitespaces_before_markdown_list": True}
-        result = fix_spaces(input_text, locale, config)
+        result = fix_spaces(input_text, locale)
         assert result == expected

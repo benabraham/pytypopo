@@ -66,49 +66,49 @@ from pytypopo.modules.words.exceptions import exclude_exceptions, place_exceptio
 from pytypopo.modules.words.pub_id import fix_pub_id
 
 # Map JS function names (camelCase) to Python functions
-# Format: 'jsFunctionName': (python_func, needs_locale, needs_config)
+# Format: 'jsFunctionName': (python_func, needs_locale)
 FUNCTION_MAP = {
     # Main API
-    "fixTypos": (fix_typos, True, True),
+    "fixTypos": (fix_typos, True),
     # Punctuation - dash
-    "fixDash": (fix_dash, True, False),
-    "fixDashesBetweenWords": (fix_dashes_between_words, True, False),
-    "fixDashBetweenWordAndPunctuation": (fix_dash_between_word_and_punctuation, True, False),
-    "fixDashBetweenWordAndBrackets": (fix_dash_between_word_and_brackets, True, False),
-    "fixDashBetweenCardinalNumbers": (fix_dash_between_cardinal_numbers, False, False),
-    "fixDashBetweenPercentageRange": (fix_dash_between_percentage_range, False, False),
-    "fixDashBetweenOrdinalNumbers": (fix_dash_between_ordinal_numbers, True, False),
+    "fixDash": (fix_dash, True),
+    "fixDashesBetweenWords": (fix_dashes_between_words, True),
+    "fixDashBetweenWordAndPunctuation": (fix_dash_between_word_and_punctuation, True),
+    "fixDashBetweenWordAndBrackets": (fix_dash_between_word_and_brackets, True),
+    "fixDashBetweenCardinalNumbers": (fix_dash_between_cardinal_numbers, False),
+    "fixDashBetweenPercentageRange": (fix_dash_between_percentage_range, False),
+    "fixDashBetweenOrdinalNumbers": (fix_dash_between_ordinal_numbers, True),
     # Punctuation - other
-    "fixDoubleQuotes": (fix_double_quotes_and_primes, True, False),
-    "fixDoubleQuotesAndPrimes": (fix_double_quotes_and_primes, True, False),
-    "fixSingleQuotes": (fix_single_quotes_primes_and_apostrophes, True, False),
-    "fixSingleQuotesPrimesAndApostrophes": (fix_single_quotes_primes_and_apostrophes, True, False),
-    "fixEllipsis": (fix_ellipsis, True, False),
-    "replaceThreeCharsWithEllipsis": (replace_three_chars_with_ellipsis, False, False),
-    "fixPeriod": (fix_period, True, False),
+    "fixDoubleQuotes": (fix_double_quotes_and_primes, True),
+    "fixDoubleQuotesAndPrimes": (fix_double_quotes_and_primes, True),
+    "fixSingleQuotes": (fix_single_quotes_primes_and_apostrophes, True),
+    "fixSingleQuotesPrimesAndApostrophes": (fix_single_quotes_primes_and_apostrophes, True),
+    "fixEllipsis": (fix_ellipsis, True),
+    "replaceThreeCharsWithEllipsis": (replace_three_chars_with_ellipsis, False),
+    "fixPeriod": (fix_period, True),
     # Symbols
-    "fixCopyrights": (fix_copyrights, True, False),
-    "fixExponents": (fix_exponents, True, False),
-    "fixMarks": (fix_marks, True, False),
-    "fixMultiplicationSign": (fix_multiplication_sign, True, False),
-    "fixNumberSign": (fix_number_sign, True, False),
-    "fixNumeroSign": (fix_numero_sign, True, False),
-    "fixPlusMinus": (fix_plus_minus, True, False),
-    "fixSectionSign": (fix_section_sign, True, False),
+    "fixCopyrights": (fix_copyrights, True),
+    "fixExponents": (fix_exponents, True),
+    "fixMarks": (fix_marks, True),
+    "fixMultiplicationSign": (fix_multiplication_sign, True),
+    "fixNumberSign": (fix_number_sign, True),
+    "fixNumeroSign": (fix_numero_sign, True),
+    "fixPlusMinus": (fix_plus_minus, True),
+    "fixSectionSign": (fix_section_sign, True),
     # Whitespace
-    "fixLines": (fix_lines, True, False),
-    "fixNbsp": (fix_nbsp, True, False),
-    "fixSpaces": (fix_spaces, True, True),
+    "fixLines": (fix_lines, True),
+    "fixNbsp": (fix_nbsp, True),
+    "fixSpaces": (fix_spaces, True),
     # Words
-    "fixAbbreviations": (fix_abbreviations, True, False),
-    "fixInitials": (fix_initials, True, False),
-    "fixSingleWordAbbreviations": (fix_single_word_abbreviations, True, False),
-    "fixMultipleWordAbbreviations": (fix_multiple_word_abbreviations, True, False),
-    "fixCase": (fix_case, False, False),
-    "fixPubId": (fix_pub_id, False, False),
+    "fixAbbreviations": (fix_abbreviations, True),
+    "fixInitials": (fix_initials, True),
+    "fixSingleWordAbbreviations": (fix_single_word_abbreviations, True),
+    "fixMultipleWordAbbreviations": (fix_multiple_word_abbreviations, True),
+    "fixCase": (fix_case, False),
+    "fixPubId": (fix_pub_id, False),
     # Exceptions
-    "excludeExceptions": (exclude_exceptions, False, False),
-    "placeExceptions": (place_exceptions, False, False),
+    "excludeExceptions": (exclude_exceptions, False),
+    "placeExceptions": (place_exceptions, False),
 }
 
 
@@ -131,7 +131,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self.send_error(404, f"Unknown function: {func_name}")
                 return
 
-            func, needs_locale, needs_config = FUNCTION_MAP[func_name]
+            func, needs_locale = FUNCTION_MAP[func_name]
 
             # Build arguments
             if func_name == "fixTypos":
@@ -140,25 +140,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     text,
                     locale_str,
                     remove_lines=config.get("removeLines", True),
-                    keep_markdown_code_blocks=config.get("keepMarkdownCodeBlocks", True),
                 )
-            elif func_name == "fixSpaces":
-                # fixSpaces needs config dict
-                loc = get_locale(locale_str)
-                py_config = {
-                    "remove_whitespaces_before_markdown_list": config.get("removeWhitespacesBeforeMarkdownList", True),
-                }
-                result = func(text, loc, py_config)
-            elif func_name in ("fixDoubleQuotes", "fixDoubleQuotesAndPrimes"):
-                # Double quotes functions accept keepMarkdownCodeBlocks config
-                loc = get_locale(locale_str)
-                keep_md = config.get("keepMarkdownCodeBlocks", False)
-                result = func(text, loc, keep_markdown_code_blocks=keep_md)
-            elif func_name in ("fixSingleQuotes", "fixSingleQuotesPrimesAndApostrophes"):
-                # Single quotes functions accept keepMarkdownCodeBlocks config
-                loc = get_locale(locale_str)
-                keep_md = config.get("keepMarkdownCodeBlocks", False)
-                result = func(text, loc, keep_markdown_code_blocks=keep_md)
             elif needs_locale:
                 loc = get_locale(locale_str)
                 result = func(text, loc)

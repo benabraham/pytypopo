@@ -4,8 +4,8 @@ Python port of [typopo](https://github.com/surfinzap/typopo/) - a multilingual t
 
 ## Project Overview
 
-**Version:** 1.0
-**Status:** Complete - full port of typopo with 12,128 tests passing on Python 3.10-3.14.
+**Version:** 3.0.0
+**Status:** Complete - full port of typopo with 12,525 tests passing on Python 3.10-3.14.
 
 **Original JS library:** https://github.com/surfinzap/typopo/
 
@@ -25,7 +25,6 @@ src/pytypopo/
 │   ├── whitespace/      # lines, nbsp, spaces
 │   └── words/           # abbreviations, case, pub_id
 └── utils/
-    ├── markdown.py
     └── regex_overlap.py
 ```
 
@@ -74,8 +73,6 @@ result = fix_typos(
     text,
     locale="en-us",           # en-us, de-de, cs, sk, rue
     remove_lines=True,        # remove empty lines
-    md_list_space_pr=False,   # preserve Markdown list spacing
-    md_code_block_markdown=False  # protect code blocks
 )
 ```
 
@@ -147,11 +144,11 @@ This project tracks the upstream library's version using semantic versioning and
 
 The format is: `MAJOR.MINOR.PATCH+pyN`
 
-Example: `2.8.2+py1`
+Example: `3.0.0+py1`
 
 Where:
 
-- `2.8.2` matches the upstream version for compatibility reference
+- `3.0.0` matches the upstream version for compatibility reference
 - `+py1` is the local Python port patch/revision number
 
 ### Rules
@@ -162,4 +159,4 @@ Where:
 
 ### Rationale
 
-This pattern preserves the ability to see upstream compatibility at a glance while remaining compliant with SemVer and PEP 440. Tools such as `pip`, `setuptools`, `wheel`, and `twine` correctly parse and sort versions like `2.8.2+pyN`.
+This pattern preserves the ability to see upstream compatibility at a glance while remaining compliant with SemVer and PEP 440. Tools such as `pip`, `setuptools`, `wheel`, and `twine` correctly parse and sort versions like `3.0.0+pyN`.

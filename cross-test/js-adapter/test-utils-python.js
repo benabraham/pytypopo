@@ -78,21 +78,6 @@ function getFunctionName(fn) {
 }
 
 /**
- * Extract inline configuration from function toString()
- * Handles patterns like: (text, locale) => fn(text, locale, { keepMarkdownCodeBlocks: true })
- */
-function extractInlineConfig(fn) {
-  const fnStr = fn.toString()
-
-  // Look for keepMarkdownCodeBlocks: true in the function body
-  if (fnStr.includes('keepMarkdownCodeBlocks: true') || fnStr.includes('keepMarkdownCodeBlocks:true')) {
-    return { keepMarkdownCodeBlocks: true }
-  }
-
-  return null
-}
-
-/**
  * Call Python bridge with a function and text
  */
 // Cache for which functions are unavailable (404)
@@ -158,9 +143,6 @@ export function createTestSuite(
       // Unit tests - call Python
       if (unitFunction) {
         const pythonFuncName = getFunctionName(unitFunction)
-        // Extract inline config from arrow functions (e.g., keepMarkdownCodeBlocks: true)
-        const unitInlineConfig = extractInlineConfig(unitFunction)
-        const unitEffectiveConfig = { ...configuration, ...unitInlineConfig }
 
         // Skip if we can't determine the function name (complex arrow functions)
         if (!pythonFuncName) {
@@ -169,7 +151,7 @@ export function createTestSuite(
           Object.keys(unitTestSet).forEach((key) => {
             const testName = `unit test (${locale}): "${truncate(key)}" → "${truncate(unitTestSet[key])}"`
             it(testName, async (ctx) => {
-              const result = await callPython(pythonFuncName, key, locale, unitEffectiveConfig)
+              const result = await callPython(pythonFuncName, key, locale, configuration)
               if (result && result.__skipped) {
                 ctx.skip()
                 return
@@ -183,9 +165,6 @@ export function createTestSuite(
       // Module tests - call Python with module function name
       if (moduleFunction && Object.keys(effectiveModuleTestSet).length > 0) {
         const pythonFuncName = getFunctionName(moduleFunction)
-        // Extract inline config from arrow functions (e.g., keepMarkdownCodeBlocks: true)
-        const inlineConfig = extractInlineConfig(moduleFunction)
-        const effectiveConfig = { ...configuration, ...inlineConfig }
 
         if (!pythonFuncName) {
           it.skip(`module test (${locale}): skipped - cannot extract function name`, () => {})
@@ -193,7 +172,7 @@ export function createTestSuite(
           Object.keys(effectiveModuleTestSet).forEach((key) => {
             const testName = `module test (${locale}): "${truncate(key)}" → "${truncate(effectiveModuleTestSet[key])}"`
             it(testName, async (ctx) => {
-              const result = await callPython(pythonFuncName, key, locale, effectiveConfig)
+              const result = await callPython(pythonFuncName, key, locale, configuration)
               if (result && result.__skipped) {
                 ctx.skip()
                 return

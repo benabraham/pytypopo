@@ -306,6 +306,14 @@ class TestIdentifyDoublePrimesUnit:
         assert result == text
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
+    def test_false_positive_number_before_opening_quote(self, locale_id):
+        """Should not convert quotes to primes when followed by letters (opening quote)."""
+        text = 'Level 3 "with" word'
+        result = identify_double_primes(text, locale_id)
+        # The " before "with" is an opening quote, not inches
+        assert result == text
+
+    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_swap_inches_with_terminal_punctuation(self, locale_id):
         """Swap inches with terminal punctuation: "He was 12". -> "He was 12." """
         text = '"He was 12".'
@@ -414,6 +422,14 @@ class TestIdentifyDoublePrimesModule:
         expected_plain = f"So it{q['apos']}s 12{DOUBLE_PRIME} {MULTIPLICATION} 12{DOUBLE_PRIME}, right?"
         expected_nbsp = f"So it{q['apos']}s{NBSP}12{DOUBLE_PRIME} {MULTIPLICATION} 12{DOUBLE_PRIME}, right?"
         assert result == expected_plain or result == expected_nbsp
+
+    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
+    def test_number_before_opening_quote_module(self, locale_id):
+        """Level 3 "with" word — should use locale quotes, not primes."""
+        q = get_quotes(locale_id)
+        text = 'Level 3 "with" word'
+        result = fix_double_quotes_and_primes(text, locale_id)
+        assert result == f"Level 3 {q['ldq']}with{q['rdq']} word"
 
     @pytest.mark.parametrize("locale_id", ALL_LOCALES)
     def test_inches_in_direct_speech(self, locale_id):
@@ -1525,67 +1541,6 @@ class TestFixDirectSpeechIntro:
         intro = get_direct_speech_intro(locale_id)
         text = f"She said{intro} {q['ldq']}Hello{q['rdq']} and left."
         assert fix_direct_speech_intro(text, locale_id) == text
-
-
-# =============================================================================
-# KEEP MARKDOWN CODE BLOCKS
-# =============================================================================
-
-
-class TestKeepMarkdownCodeBlocks:
-    """Preserve markdown code blocks.
-
-    Port of keepMarkdownCodeBlocksSet tests from JS.
-    """
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_triple_backtick_code_block(self, locale_id):
-        """```\ncode\n```"""
-        text = "```\ncode\n```"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_double_backtick_code(self, locale_id):
-        """``code``"""
-        text = "``code``"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_double_backtick_code_with_spaces(self, locale_id):
-        """``code code``"""
-        text = "``code code``"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_multiple_double_backtick_codes(self, locale_id):
-        """``code`` ``code``"""
-        text = "``code`` ``code``"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_single_backtick_code(self, locale_id):
-        """`code`"""
-        text = "`code`"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_single_backtick_code_with_spaces(self, locale_id):
-        """`code code`"""
-        text = "`code code`"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
-
-    @pytest.mark.parametrize("locale_id", ALL_LOCALES)
-    def test_multiple_single_backtick_codes(self, locale_id):
-        """`code` `code`"""
-        text = "`code` `code`"
-        result = fix_double_quotes_and_primes(text, locale_id, keep_markdown_code_blocks=True)
-        assert result == text
 
 
 # =============================================================================
