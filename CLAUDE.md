@@ -4,7 +4,7 @@ Python port of [typopo](https://github.com/surfinzap/typopo/) - a multilingual t
 
 ## Project Overview
 
-**Version:** 3.0.0
+**Version:** 3.0.1
 **Status:** Complete - full port of typopo with 12,525 tests passing on Python 3.10-3.14.
 
 **Original JS library:** https://github.com/surfinzap/typopo/
