@@ -10,7 +10,7 @@ import pytest
 from pytypopo.locale import Locale, get_locale  # noqa: I001
 
 # All supported locales
-ALL_LOCALES = ["en-us", "de-de", "cs", "sk", "rue"]
+ALL_LOCALES = ["en-us", "de-de", "de-ch", "cs", "sk", "rue"]
 
 # Quote character constants using Unicode escapes to avoid syntax issues
 # These are the typographically correct quote characters
@@ -40,6 +40,13 @@ EXPECTED_QUOTES = {
         "single_quote_open": SINGLE_LOW_9_QUOTE,
         # de-de uses LEFT_SINGLE_QUOTE for closing (matches JS typopo)
         "single_quote_close": LEFT_SINGLE_QUOTE,
+    },
+    "de-ch": {
+        # Swiss Standard German uses guillemets pointing outwards
+        "double_quote_open": LEFT_GUILLEMET,
+        "double_quote_close": RIGHT_GUILLEMET,
+        "single_quote_open": LEFT_SINGLE_GUILLEMET,
+        "single_quote_close": RIGHT_SINGLE_GUILLEMET,
     },
     "cs": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,

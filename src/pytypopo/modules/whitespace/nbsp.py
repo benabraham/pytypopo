@@ -304,20 +304,19 @@ def fix_nbsp_for_name_with_regnal_number(text, locale):
         indicator = match.group(4)
         trailing_nbsp = match.group(5)
 
+        has_trailing = trailing_nbsp == NBSP
+
+        # False positive: abbreviations starting with M, D or C are not regnal
+        # numbers (e.g. "Washington DC", "Standard CD", "Content MDC")
+        if numeral.startswith(("M", "D", "C")):
+            return f"{name}{SPACE}{numeral}{indicator}{trailing_nbsp}"
+
         # Special case: "I" alone might be English pronoun, not Roman numeral
         if numeral == "I":
-            if trailing_nbsp == "":
-                return f"{name}{SPACE}{numeral}{indicator}"
-            else:
-                return f"{name}{SPACE}{numeral}{indicator}{trailing_nbsp}"
+            return f"{name}{SPACE}{numeral}{indicator}{trailing_nbsp if has_trailing else ''}"
 
         # Standard case: add nbsp before numeral, space after indicator
-        if trailing_nbsp == "":
-            return f"{name}{NBSP}{numeral}{indicator}"
-        elif trailing_nbsp == NBSP:
-            return f"{name}{NBSP}{numeral}{indicator}{SPACE}"
-        else:
-            return f"{name}{NBSP}{numeral}{indicator}{SPACE}"
+        return f"{name}{NBSP}{numeral}{indicator}{SPACE if has_trailing else ''}"
 
     return pattern.sub(replacer, text)
 

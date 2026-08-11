@@ -86,6 +86,31 @@ LOCALE_CONFIGS = {
         "space_after_section_sign": NBSP,
         "space_after_paragraph_sign": NBSP,
     },
+    "de-ch": {
+        # Swiss Standard German uses guillemets pointing outwards
+        "double_quote_open": LEFT_GUILLEMET,
+        "double_quote_close": RIGHT_GUILLEMET,
+        "single_quote_open": LEFT_SINGLE_GUILLEMET,
+        "single_quote_close": RIGHT_SINGLE_GUILLEMET,
+        "ordinal_indicator": r"\.",
+        "roman_ordinal_indicator": r"\.",
+        # de-ch: no extra spaces in ordinal dates (1.1.1993)
+        "ordinal_date_first_space": "",
+        "ordinal_date_second_space": "",
+        "space_before_percent": NARROW_NBSP,  # de-ch: narrow nbsp before %
+        # de-ch uses en dash with nbsp before and space after
+        "dash_space_before": NBSP,
+        "dash_char": EN_DASH,
+        "dash_space_after": SPACE,
+        # Space between abbreviated words: F.{space}X. Salda, e.{space}g.
+        "space_after_abbreviation": NBSP,
+        # Symbol spacing
+        "space_after_copyright": NBSP,
+        "space_after_sound_recording_copyright": NBSP,
+        "space_after_numero_sign": NBSP,
+        "space_after_section_sign": NBSP,
+        "space_after_paragraph_sign": NBSP,
+    },
     "cs": {
         "double_quote_open": DOUBLE_LOW_9_QUOTE,
         "double_quote_close": LEFT_DOUBLE_QUOTE,  # Czech uses „…" style
@@ -320,7 +345,7 @@ def get_locale(locale_id="en-us"):
     Get a Locale instance for the given locale ID.
 
     Args:
-        locale_id: Language locale identifier (en-us, de-de, cs, sk, rue),
+        locale_id: Language locale identifier (en-us, de-de, de-ch, cs, sk, rue),
                    or an existing Locale instance.
                    Case-insensitive. Defaults to 'en-us'.
 

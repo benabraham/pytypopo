@@ -7,7 +7,7 @@ Port of tests/test-utils.js from typopo.
 import pytest
 
 # All supported locales
-ALL_LOCALES = ["en-us", "de-de", "cs", "sk", "rue"]
+ALL_LOCALES = ["en-us", "de-de", "de-ch", "cs", "sk", "rue"]
 
 
 @pytest.fixture(params=ALL_LOCALES)
@@ -25,7 +25,7 @@ SPACE = " "  # Regular space
 # Quote characters:
 # en-us: U+201C (") U+201D (") U+2018 (') U+2019 (')
 # de-de/cs/sk: U+201E (,,) U+201C (") U+201A (,) U+2019 (')
-# rue: U+00AB (<<) U+00BB (>>) U+2039 (<) U+203A (>)
+# de-ch/rue: U+00AB (<<) U+00BB (>>) U+2039 (<) U+203A (>)
 LOCALE_TOKENS = {
     "en-us": {
         "double_open": "\u201c",  # LEFT DOUBLE QUOTATION MARK
@@ -42,6 +42,14 @@ LOCALE_TOKENS = {
         "single_close": "\u2019",  # RIGHT SINGLE QUOTATION MARK
         "abbr_space": NBSP,  # de-de: nbsp between abbreviated words
         "copyright_space": NBSP,  # de-de: nbsp after copyright symbols
+    },
+    "de-ch": {
+        "double_open": "\u00ab",  # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+        "double_close": "\u00bb",  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+        "single_open": "\u2039",  # SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+        "single_close": "\u203a",  # SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+        "abbr_space": NBSP,  # de-ch: nbsp between abbreviated words
+        "copyright_space": NBSP,  # de-ch: nbsp after copyright symbols
     },
     "cs": {
         "double_open": "\u201e",  # DOUBLE LOW-9 QUOTATION MARK

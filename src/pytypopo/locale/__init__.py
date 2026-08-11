@@ -7,6 +7,7 @@ and ordinal indicators for supported languages.
 Supported locales:
     - en-us: English (US) - curly quotes
     - de-de: German - low-high quotes
+    - de-ch: Swiss Standard German - guillemets
     - cs: Czech - low-high quotes
     - sk: Slovak - low-high quotes
     - rue: Rusyn - guillemets

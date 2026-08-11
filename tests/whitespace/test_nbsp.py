@@ -299,7 +299,12 @@ NBSP_NAME_REGNAL_NUMBER_TESTS = {
     f"Karel{NBSP}IV. byl rimsko-nemecky kral.": f"Karel{NBSP}IV. byl rimsko-nemecky kral.",
     "Karel IV.": f"Karel{NBSP}IV.",
     "Karel X.": f"Karel{NBSP}X.",
+    "Pope Leo XIV.": f"Pope Leo{NBSP}XIV.",
     # False positives
+    # Abbreviations starting with M, D or C are not regnal numbers
+    "Content MDC": "Content MDC",
+    "Washington DC": "Washington DC",
+    "Standard CD": "Standard CD",
     "je to IV. cenova skupina": "je to IV. cenova skupina",
     "Try Ctrl+I": "Try Ctrl+I",
     # Charles I. - special case: I could be mistaken for Roman numeral
@@ -311,7 +316,7 @@ class TestFixNbspForNameWithRegnalNumber:
     """Tests for nbsp around names with regnal numbers (Karel IV.)."""
 
     @pytest.mark.parametrize(("input_text", "expected"), NBSP_NAME_REGNAL_NUMBER_TESTS.items())
-    @pytest.mark.parametrize("locale_id", ["sk", "cs", "rue", "de-de"])
+    @pytest.mark.parametrize("locale_id", ["sk", "cs", "rue", "de-de", "de-ch"])
     def test_fix_nbsp_for_name_with_regnal_number(self, input_text, expected, locale_id):
         """Names with regnal numbers should get nbsp before the numeral."""
         result = fix_nbsp_for_name_with_regnal_number(input_text, Locale(locale_id))
