@@ -4,8 +4,8 @@ Python port of [typopo](https://github.com/surfinzap/typopo/) - a multilingual t
 
 ## Project Overview
 
-**Version:** 3.0.1
-**Status:** Complete - full port of typopo with 12,525 tests passing on Python 3.10-3.14.
+**Version:** 3.1.0
+**Status:** Complete - full port of typopo with 14,644 tests passing on Python 3.10-3.14.
 
 **Original JS library:** https://github.com/surfinzap/typopo/
 
@@ -17,8 +17,7 @@ src/pytypopo/
 ├── const.py             # Character sets, regex patterns
 ├── locale/
 │   ├── __init__.py
-│   ├── base.py          # Locale class
-│   ├── en_us.py, de_de.py, cs.py, sk.py, rue.py
+│   └── base.py          # Locale class + LOCALE_CONFIGS for all locales
 ├── modules/
 │   ├── punctuation/     # period, ellipsis, dash, quotes
 │   ├── symbols/         # copyright, exponents, marks, etc.
@@ -71,7 +70,7 @@ from pytypopo import fix_typos
 
 result = fix_typos(
     text,
-    locale="en-us",           # en-us, de-de, cs, sk, rue
+    locale="en-us",           # en-us, de-de, de-ch, cs, sk, rue
     remove_lines=True,        # remove empty lines
 )
 ```
@@ -82,6 +81,7 @@ result = fix_typos(
 |--------|----------|
 | en-us  | English (US) - default |
 | de-de  | German |
+| de-ch  | Swiss Standard German |
 | cs     | Czech |
 | sk     | Slovak |
 | rue    | Rusyn |

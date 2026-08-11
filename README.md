@@ -51,6 +51,10 @@ text = fix_typos('Ahoj "svete"...', locale='cs')
 text = fix_typos('Er sagte "Hallo"', locale='de-de')
 # → Er sagte „Hallo"
 
+# Swiss Standard German (guillemets)
+text = fix_typos('Er sagte "Hallo"', locale='de-ch')
+# → Er sagte «Hallo»
+
 # With options
 text = fix_typos(
     text,
@@ -73,7 +77,7 @@ def fix_typos(
 
     Args:
         text: Input text to fix
-        locale: Language locale (en-us, de-de, cs, sk, rue)
+        locale: Language locale (en-us, de-de, de-ch, cs, sk, rue)
         remove_lines: Remove excessive empty lines
 
     Returns:
