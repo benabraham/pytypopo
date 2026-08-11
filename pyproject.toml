@@ -1,6 +1,6 @@
 [project]
 name = "pytypopo"
-version = "3.1.0+py0"
+version = "3.1.0+py1"
 description = "Multilingual typography fixer - Python port of typopo"
 readme = "README.md"
 license = { text = "MIT" }
