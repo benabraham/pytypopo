@@ -4,7 +4,7 @@ pytypopo - Multilingual typography fixer
 Python port of typopo (https://github.com/surfinzap/typopo/)
 """
 
-__version__ = "3.0.1+py0"
+__version__ = "3.1.0+py0"
 
 from pytypopo.locale import get_locale
 from pytypopo.modules.punctuation import (
@@ -58,6 +58,7 @@ def fix_typos(
         locale: Language locale identifier. Supported values:
             - 'en-us' (English, US) - default
             - 'de-de' (German)
+            - 'de-ch' (Swiss Standard German)
             - 'cs' (Czech)
             - 'sk' (Slovak)
             - 'rue' (Rusyn)
