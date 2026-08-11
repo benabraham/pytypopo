@@ -23,16 +23,16 @@ classifiers = [
     "Topic :: Text Processing :: Filters",
 ]
 dependencies = [
-    "regex>=2025.11.3",
+    "regex>=2026.7.19",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pre-commit>=4.0",
-    "pytest>=8.0",
-    "pytest-cov>=4.0",
-    "pytest-xdist>=3.0",
-    "ruff>=0.8",
+    "pre-commit>=4.6.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.16.1",
 ]
 
 [project.urls]

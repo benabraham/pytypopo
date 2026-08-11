@@ -20,16 +20,16 @@ export default defineConfig({
     // Resolve upstream imports
     alias: {
       // Redirect test-utils to our Python bridge version
-      '../test-utils.js': resolve(__dirname, 'test-utils-python.js'),
-      './test-utils.js': resolve(__dirname, 'test-utils-python.js'),
+      '../test-utils.js': resolve(import.meta.dirname, 'test-utils-python.js'),
+      './test-utils.js': resolve(import.meta.dirname, 'test-utils-python.js'),
 
       // Keep locale imports pointing to upstream
-      '../../src/locale/locale.js': resolve(__dirname, '../typopo/src/locale/locale.js'),
-      '../src/locale/locale.js': resolve(__dirname, '../typopo/src/locale/locale.js'),
+      '../../src/locale/locale.js': resolve(import.meta.dirname, '../typopo/src/locale/locale.js'),
+      '../src/locale/locale.js': resolve(import.meta.dirname, '../typopo/src/locale/locale.js'),
 
       // Keep const imports pointing to upstream
-      '../../src/const.js': resolve(__dirname, '../typopo/src/const.js'),
-      '../src/const.js': resolve(__dirname, '../typopo/src/const.js'),
+      '../../src/const.js': resolve(import.meta.dirname, '../typopo/src/const.js'),
+      '../src/const.js': resolve(import.meta.dirname, '../typopo/src/const.js'),
     },
   },
 })
